@@ -1,8 +1,6 @@
 import datetime
 import re
 from django.db import models
-
-
 # from library.models import UserCard
 
 
@@ -86,19 +84,7 @@ class Faculty(Patron):
     pass
 
 
-class Librarian(User):  # (User,UserCard)
-
-    def count_unchecked_copies(self, doc):
-        return len(doc.copies.filter(is_checked_out=False))
-
-    def calculate_users_items(self, user):
-        return len(user.copies.all())
-
-    def is_due(self):
-        pass
-
-    def overdue_fines(self):
-        pass
+class Librarian(User):  #(User,UserCard)
 
     def patrons_docs(self, user, doc):
         for copy in user.user_card.copies.all():
@@ -137,3 +123,5 @@ class Librarian(User):  # (User,UserCard)
     #     UserCard.user = new_user
     #     UserCard.library = new_lib_card
     #     UserCard.library_card_number = new_lib_card
+
+
