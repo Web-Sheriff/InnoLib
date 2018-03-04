@@ -1,6 +1,7 @@
 import datetime
 import re
 from django.db import models
+from library.models import UserCard
 
 
 class Author(models.Model):
@@ -48,7 +49,7 @@ class Patron(User):
     def check_out_doc(self, document):
         for copy in self.user_card.copies.all():
             if copy.document == document:
-                return False # user has already checked this document
+                return False  # user has already checked this document
         for copy in document.copies.all():
             if not copy.is_checked_out:
                 copy.is_checked_out = True
@@ -57,7 +58,7 @@ class Patron(User):
                 self.user_card.save()
                 copy.save()
                 return True
-        return False # there are no available copies
+        return False  # there are no available copies
 
     # return copy of the document to the library. If it is not possible returns False
     def return_doc(self, document):
@@ -68,7 +69,7 @@ class Patron(User):
                 self.user_card.save()
                 copy.save()
                 return True
-        return False # no such document
+        return False  # no such document
         pass
 
     def has_overdue(self):  # bool
@@ -83,15 +84,16 @@ class Faculty(Patron):
     pass
 
 
-class Librarian(User):
+class Librarian(User, UserCard):
 
     def patrons_docs(self, user, doc):
         for copy in user.user_card.copies.all():
-            if copy.document == doc :
-                print (user.first_name+" "+user.second_name+": "+ doc.title+ ": " + copy.number)
+            if copy.document == doc:
+                print(user.first_name + " " + user.second_name + ": " + doc.title + ": " + copy.number)
 
-    def unchecked_copies (self, doc):
-        print ("there are "+self.user_card.library.count_unchecked_copies(doc)+"unchrcked copies of document "+doc.title + "in library.")
+    def unchecked_copies(self, doc):
+        print("there are " + self.user_card.library.count_unchecked_copies(
+            doc) + "unchrcked copies of document " + doc.title + "in library.")
 
     def manage_patron(self):
         pass
@@ -107,3 +109,19 @@ class Librarian(User):
 
     def modify_doc(self):
         pass
+
+    def user_card3(self, login, password, first_name, second_name, address, phone_number):
+        new_user = User()
+        new_user.login = login
+        new_user.password = password
+        new_user.first_name = first_name
+        new_user.second_name = second_name
+        new_user.address = address
+        new_user.phone_number = phone_number
+
+    def user_card8(self, new_user, new_lib_card, new_lib):
+        UserCard.user = new_user
+        UserCard.library = new_lib_card
+        UserCard.library_card_number = new_lib_card
+
+
