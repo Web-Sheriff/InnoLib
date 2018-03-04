@@ -15,25 +15,6 @@ class Library(models.Model):
 
     def overdue_fines(self):
         pass
-    
-    def count_unchecked_copies (self, doc):
-        a = 0
-        for copy in doc.copies.all():
-            if not copy.is_checked_out:
-                a += 1
-        return a
-
-    def calculate_users_items(self, user):
-        a = 0
-        for copy in user.user_card.copies.all():
-            a += 1
-        return a
-
-    def is_due(self):
-        pass
-
-    def overdue_fines(self):
-        pass
 
 
 ''' 
