@@ -73,6 +73,7 @@ class Copy(models.Model):
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, related_name='copies')
     number = models.IntegerField()
     is_checked_out = models.BooleanField(default=False)
+    need_to_return = models.BooleanField(default=False)
     booking_date = models.DateField(null=True)
     overdue_date = models.DateField(null=True)
 

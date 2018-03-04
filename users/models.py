@@ -85,7 +85,11 @@ class Student(Patron):
 
 
 class Faculty(Patron):
-    pass
+    def faculty_card(self, login, password, name):
+        new_fac = Faculty()
+        new_fac.login = login
+        new_fac.password = password
+        new_fac.name = name
 
 
 class Librarian(User):  # (User,UserCard)
@@ -124,6 +128,15 @@ class Librarian(User):  # (User,UserCard)
     def check_overdue_copy(self):
         pass
 
+    def create_book(library, is_best_seller, reference, title):
+        class_model = ReferenceBook if reference else Book
+        return class_model.objects.create(library=library,
+                                          title=title, price_value=0, is_best_seller=is_best_seller,
+                                          edition=0, publisher='test', publish_time=datetime.date.today())
+
+    def create_copy(document, number):
+        Copy.objects.create(document=document, number=number)
+
     def add_doc(self):
         pass
 
@@ -133,7 +146,14 @@ class Librarian(User):  # (User,UserCard)
     def modify_doc(self):
         pass
 
-    def user_card3(self, login, password, first_name, second_name, address, phone_number):
+    def create_user(class_model, library, num):
+        return class_model.objects.create(login='test',
+                                          password='test', first_name='test',
+                                          second_name='test', address='test',
+                                          phone_number='test', library_card_number=num,
+                                          library=library)
+
+    def user_card(self, login, password, first_name, second_name, address, phone_number, fac_or_stu):
         new_user = User()
         new_user.login = login
         new_user.password = password
@@ -141,6 +161,39 @@ class Librarian(User):  # (User,UserCard)
         new_user.second_name = second_name
         new_user.address = address
         new_user.phone_number = phone_number
+        new_user.fac_or_stu = fac_or_stu
+
+    # user story 4
+    def list_of_users(self, user):
+        for i in user.user_card.copies.all:
+            print(i)
+
+    # user story 10
+    def number_of_cards(self, user, n):
+        for i in n:
+            create_user(class_model, library, i)
+
+    # user story 11
+    def edit_user(class_model, num, login, password, first_name, second_name, address, phone_number, fac_or_stu):
+        emp = User.objects.get(pk=num)
+        emp.login = request.POST.get(login)
+        emp.password = request.POST.get(password)
+        emp.first_name = request.POST.get(first_name)
+        emp.second_name = request.POST.get(second_name)
+        emp.address = request.POST.get(address)
+        emp.phone_number = request.POST.get(phone_number)
+        emp.save()
+
+    # user story 14
+    def delete_book(library):
+        return class_model.objects.delete
+
+    # user story 16
+    def return_checked(self, doc):
+        for i in doc.copies.filter(is_checked_out=True):
+            if i.has_overdue:
+                i.need_to_return = True
+            return doc.copies.filter(is_checked_out=True)
 
     # def user_card8(self, new_user, new_lib_card, new_lib):
     #     UserCard.user = new_user
