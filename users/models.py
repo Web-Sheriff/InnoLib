@@ -1,6 +1,7 @@
 import datetime
 import re
 from django.db import models
+from documents.models import Document
 
 
 # from library.models import UserCard
@@ -66,16 +67,17 @@ class Patron(User):
     def return_doc(self, document):
         for copy in self.user_card.copies.all():
             if copy.document == document:
-                copy.is_checked_out = False
                 self.user_card.copies.exclude(copy)
                 self.user_card.save()
-                copy.save()
+                Librarian.objects.get(id='1').handed_over_copies.add(copy)
                 return True
         return False  # no such document
-        pass
 
     def has_overdue(self):  # bool
-        pass
+        for copy in self.user_card.copies.all():
+            if copy.overdue_date > datetime.date:
+                return True
+        return False
 
 
 class Student(Patron):
@@ -87,6 +89,12 @@ class Faculty(Patron):
 
 
 class Librarian(User):  # (User,UserCard)
+
+    handed_over_copies = models.ManyToManyField(Document)
+
+    def accept_doc(self, copy):
+        copy.is_checked_out = False
+        copy.save()
 
     def count_unchecked_copies(self, doc):
         return len(doc.copies.filter(is_checked_out=False))
