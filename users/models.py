@@ -95,6 +95,7 @@ class Librarian(User):  # (User,UserCard)
     def accept_doc(self, copy):
         copy.is_checked_out = False
         copy.save()
+        self.handed_over_copies.remove(copy)
 
     def count_unchecked_copies(self, doc):
         return len(doc.copies.filter(is_checked_out=False))
