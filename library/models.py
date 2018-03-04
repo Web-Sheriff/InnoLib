@@ -17,7 +17,6 @@ class Library(models.Model):
         pass
 
 
-
 ''' 
 every user has exactly one user card
 user card contains all copies, which user checked out
@@ -32,5 +31,5 @@ class UserCard(models.Model):
 
 
 class Login(models.Model):
- username = models.EmailField()
- password = models.CharField(max_length=128)
+    username = models.EmailField()
+    password = models.CharField(max_length=128)

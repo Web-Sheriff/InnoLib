@@ -107,7 +107,7 @@ class Librarian(User):  # (User,UserCard)
 
     def unchecked_copies(self, doc):
         print("there are " + self.user_card.library.count_unchecked_copies(
-            doc) + "unchrcked copies of document " + doc.title + "in library.")
+            doc) + "unchecked copies of document " + doc.title + "in library.")
 
     def manage_patron(self):
         pass
