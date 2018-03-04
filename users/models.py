@@ -1,7 +1,7 @@
 import datetime
 import re
 from django.db import models
-from library.models import UserCard
+# from library.models import UserCard
 
 
 class Author(models.Model):
@@ -84,7 +84,7 @@ class Faculty(Patron):
     pass
 
 
-class Librarian(User, UserCard):
+class Librarian(User):  #(User,UserCard)
 
     def patrons_docs(self, user, doc):
         for copy in user.user_card.copies.all():
@@ -119,9 +119,9 @@ class Librarian(User, UserCard):
         new_user.address = address
         new_user.phone_number = phone_number
 
-    def user_card8(self, new_user, new_lib_card, new_lib):
-        UserCard.user = new_user
-        UserCard.library = new_lib_card
-        UserCard.library_card_number = new_lib_card
+    # def user_card8(self, new_user, new_lib_card, new_lib):
+    #     UserCard.user = new_user
+    #     UserCard.library = new_lib_card
+    #     UserCard.library_card_number = new_lib_card
 
 
