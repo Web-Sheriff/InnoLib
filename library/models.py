@@ -17,6 +17,7 @@ class Library(models.Model):
         pass
 
 
+
 ''' 
 every user has exactly one user card
 user card contains all copies, which user checked out
