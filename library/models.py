@@ -4,12 +4,11 @@ from users.models import User
 
 
 class Library(models.Model):
-
     def count_unchecked_copies (self, doc):
+        a = 0
         for copy in doc.copies.all():
-            a = 0
             if not copy.is_checked_out:
-                a=a+1
+                a += 1
         return a
 
     def calculate_users_items(self, user):
@@ -36,6 +35,7 @@ class UserCard(models.Model):
     user = models.OneToOneField(User, on_delete=models.DO_NOTHING, related_name='user_card')
     library_card_number = models.CharField(max_length=100)
     library = models.ForeignKey(Library, on_delete=models.DO_NOTHING, related_name='user_cards')
+
 
 class Login(models.Model):
  username = models.EmailField()
