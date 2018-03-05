@@ -3,10 +3,13 @@ import re
 
 from django.db import models
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 from documents.models import Document  # ReferenceBook, Copy, Book
 
 
+=======
+>>>>>>> parent of f63db73... ?
 =======
 >>>>>>> parent of f63db73... ?
 # from library.models import UserCard
@@ -100,6 +103,7 @@ class Faculty(Patron):
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 class Librarian(User):  # (User,UserCard)
 
     handed_over_copies = models.ManyToManyField(Document)
@@ -120,6 +124,9 @@ class Librarian(User):  # (User,UserCard)
 
     def overdue_fines(self):
         pass
+=======
+class Librarian(User):  #(User,UserCard)
+>>>>>>> parent of f63db73... ?
 =======
 class Librarian(User):  #(User,UserCard)
 >>>>>>> parent of f63db73... ?
