@@ -1,7 +1,9 @@
 import datetime
 import re
+
 from django.db import models
-from documents.models import Document
+
+from documents.models import Document  # ReferenceBook, Copy, Book
 
 
 # from library.models import UserCard
@@ -85,11 +87,13 @@ class Student(Patron):
 
 
 class Faculty(Patron):
+    '''
     def faculty_card(self, login, password, name):
         new_fac = Faculty()
         new_fac.login = login
         new_fac.password = password
         new_fac.name = name
+    '''
 
 
 class Librarian(User):  # (User,UserCard)
@@ -128,6 +132,7 @@ class Librarian(User):  # (User,UserCard)
     def check_overdue_copy(self):
         pass
 
+    '''
     def create_book(library, is_best_seller, reference, title):
         class_model = ReferenceBook if reference else Book
         return class_model.objects.create(library=library,
@@ -136,6 +141,7 @@ class Librarian(User):  # (User,UserCard)
 
     def create_copy(document, number):
         Copy.objects.create(document=document, number=number)
+    '''
 
     def add_doc(self):
         pass
@@ -146,6 +152,7 @@ class Librarian(User):  # (User,UserCard)
     def modify_doc(self):
         pass
 
+    '''
     def create_user(class_model, library, num):
         return class_model.objects.create(login='test',
                                           password='test', first_name='test',
@@ -161,6 +168,7 @@ class Librarian(User):  # (User,UserCard)
         new_user.second_name = second_name
         new_user.address = address
         new_user.phone_number = phone_number
+        
         new_user.fac_or_stu = fac_or_stu
 
     # user story 4
@@ -169,11 +177,12 @@ class Librarian(User):  # (User,UserCard)
             print(i)
 
     # user story 10
-    def number_of_cards(self, user, n):
-        for i in n:
-            create_user(class_model, library, i)
+    # def number_of_cards(library, n):
+    #     for i in n:
+    #         self.create_user(class_model, library, i)
 
     # user story 11
+    
     def edit_user(class_model, num, login, password, first_name, second_name, address, phone_number, fac_or_stu):
         emp = User.objects.get(pk=num)
         emp.login = request.POST.get(login)
@@ -194,7 +203,7 @@ class Librarian(User):  # (User,UserCard)
             if i.has_overdue:
                 i.need_to_return = True
             return doc.copies.filter(is_checked_out=True)
-
+    '''
     # def user_card8(self, new_user, new_lib_card, new_lib):
     #     UserCard.user = new_user
     #     UserCard.library = new_lib_card

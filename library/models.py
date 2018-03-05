@@ -24,7 +24,7 @@ user card has unique number
 '''
 
 
-class UserCard(models.Model):
+class UserCard(models.Model, User):
     user = models.OneToOneField(User, on_delete=models.DO_NOTHING, related_name='user_card')
     library_card_number = models.CharField(max_length=100)
     library = models.ForeignKey(Library, on_delete=models.DO_NOTHING, related_name='user_cards')
