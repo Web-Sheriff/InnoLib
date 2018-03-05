@@ -1,7 +1,7 @@
 # all the classes there (but not copy) is about documents, not about library system. Copy connects library and documents
-from django.db import models
-
 import datetime
+
+from django.db import models
 
 from library.models import Library
 from users.models import User, Faculty
@@ -41,7 +41,7 @@ class Book(Document):
         return datetime.timedelta(weeks=3)
 
 
-class ReferenceBook (Book):
+class ReferenceBook(Book):
     pass
 
 

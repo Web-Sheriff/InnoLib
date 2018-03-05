@@ -5,6 +5,7 @@ from django.db import models
 
 from documents.models import Document  # ReferenceBook, Copy, Book
 
+
 # from library.models import UserCard
 
 
@@ -95,8 +96,6 @@ class Faculty(Patron):
     '''
 
 
-
-
 class Librarian(User):  # (User,UserCard)
 
     handed_over_copies = models.ManyToManyField(Document)
@@ -119,8 +118,7 @@ class Librarian(User):  # (User,UserCard)
         pass
 
 
-class Librarian(User):  #(User,UserCard)
-
+class Librarian(User):  # (User,UserCard)
 
     def patrons_docs(self, user, doc):
         for copy in user.user_card.copies.all():
@@ -213,5 +211,3 @@ class Librarian(User):  #(User,UserCard)
     #     UserCard.user = new_user
     #     UserCard.library = new_lib_card
     #     UserCard.library_card_number = new_lib_card
-
-
