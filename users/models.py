@@ -2,10 +2,13 @@ import datetime
 import re
 
 from django.db import models
+<<<<<<< HEAD
 
 from documents.models import Document  # ReferenceBook, Copy, Book
 
 
+=======
+>>>>>>> parent of f63db73... ?
 # from library.models import UserCard
 
 
@@ -96,6 +99,7 @@ class Faculty(Patron):
     '''
 
 
+<<<<<<< HEAD
 class Librarian(User):  # (User,UserCard)
 
     handed_over_copies = models.ManyToManyField(Document)
@@ -116,6 +120,9 @@ class Librarian(User):  # (User,UserCard)
 
     def overdue_fines(self):
         pass
+=======
+class Librarian(User):  #(User,UserCard)
+>>>>>>> parent of f63db73... ?
 
     def patrons_docs(self, user, doc):
         for copy in user.user_card.copies.all():
@@ -208,3 +215,5 @@ class Librarian(User):  # (User,UserCard)
     #     UserCard.user = new_user
     #     UserCard.library = new_lib_card
     #     UserCard.library_card_number = new_lib_card
+
+
