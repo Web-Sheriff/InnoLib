@@ -287,6 +287,7 @@ class Librarian(User):  # (User,UserCard)
     #         create_user(class_model, library, i)
 
     # user story 11
+
     # def edit_user(self, class_model, num, login, password, first_name, second_name, address, phone_number, fac_or_stu):
     #     emp = User.objects.get(pk=num)
     #     emp.login = request.POST.get(login)
