@@ -67,11 +67,14 @@ class Book(Document):
         return datetime.timedelta(weeks=3)
 
 
- class ReferenceBook(Book):
+class ReferenceBook(Book):
     title = models.CharField(max_length=250)
     library = models.ForeignKey(Library, on_delete=models.DO_NOTHING, related_name='reference')
     authors = models.ManyToManyField(Author, related_name='reference')
     keywords = models.ManyToManyField(Keyword, related_name='reference')
+
+    def booking_period(self, user):
+        return datetime.timedelta(weeks=2)
 
 
 class AudioVideo(Document):
