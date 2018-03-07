@@ -80,6 +80,9 @@ class AudioVideo(Document):
     authors = models.ManyToManyField(Author, related_name='audio video')
     keywords = models.ManyToManyField(Keyword, related_name='audio video')
 
+    def booking_period(self, user):
+        return datetime.timedelta(weeks=2)
+
 
 class Editor(models.Model):
     first_name = models.CharField(max_length=250)
@@ -275,12 +278,10 @@ class Librarian(User):  # (User,UserCard)
 
     def remove_copy(self, document, count):
         removable = Copy.objects.get(document=document)
-        for copy in removable:
-            if copy.is_checked_out == False:
-                if removable.number > count:
-                    removable.number -= count
-                else:
-                    removable.delete()
+        if removable.number > count:
+            removable.number -= count
+        else:
+            removable.delete()
 
     def patron_information(self, id):
         try:
@@ -313,7 +314,8 @@ class Librarian(User):  # (User,UserCard)
         print("]")
 
     def remove_patron(self, id):
-        Copy.objects.get(id).delete()
+        if len(Copy.objects.filter(is_checked_out=True, user=id)):
+            Copy.objects.get(id).delete()
 
     def modify_doc(self):
         pass
