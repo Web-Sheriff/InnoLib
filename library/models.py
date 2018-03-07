@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import ObjectDoesNotExist
 import datetime
 import re
 
@@ -54,9 +55,9 @@ class Document(models.Model):
 
 class Book(Document):
     is_best_seller = models.BooleanField(default=False)
-    edition = models.IntegerField()
-    publisher = models.CharField(max_length=100)
-    publish_time = models.DateField()
+    edition = models.CharField(max_length=63)
+    publisher = models.CharField(max_length=63)
+    year = models.IntegerField()
 
     def booking_period(self, user):
         if isinstance(user, Faculty):
@@ -192,6 +193,9 @@ class Patron(User):
                 return True
         return False
 
+    def in_library(self):
+        return False
+
 
 class Student(Patron):
     pass
@@ -243,18 +247,57 @@ class Librarian(User):  # (User,UserCard)
 
     def create_book(self, library, is_best_seller, reference, title):
         class_model = ReferenceBook if reference else Book
-        return class_model.objects.create(library=library,
-                                          title=title, price_value=0, is_best_seller=is_best_seller,
+        return class_model.objects.create(library=library, title=title, price_value=0, is_best_seller=is_best_seller,
                                           edition=0, publisher='test', publish_time=datetime.date.today())
 
     def create_copy(self, document, number):
         Copy.objects.create(document=document, number=number)
 
+    def create_av(self, library, title):
+        return AudioVideo.objects.create(library=library, title=title, price_value=0)
+
     def add_doc(self):
         pass
 
-    def delete_doc(self):
-        pass
+    def remove_copy(self, document, count):
+        removable = Copy.objects.get(document=document)
+        if removable.number > count:
+            removable.number -= count
+        else:
+            removable.delete()
+
+    def patron_information(self, id):
+        try:
+            patron = Patron.objects.get(id=id)
+        except ObjectDoesNotExist:
+            print("p", id, ": information no available, patron does not exist.", sep='')
+            return
+        print("p", id, sep='')
+        print(" Name:", patron.first_name, patron.second_name)
+        print(" Address:", patron.address)
+        print(" Phone Number:", patron.phone_number)
+        print(" Lib. card ID:", patron.user_card.id)
+
+        if isinstance(patron, Faculty):
+            print(" Type: Faculty")
+        else:
+            print(" Type: Student")
+
+        print(" (document checked-out, due date): ")
+        print("[", end='')
+
+        copies = patron.user_card.copies
+        for copy in copies.all():
+            if isinstance(copy.document, AudioVideo):
+                print("(av", copy.document.id, ',', copy.overdue_date, ')', sep='', end='')
+            else:
+                print("(b", copy.document.id, ',', copy.overdue_date, ')', sep='', end='')
+                if copy != copies.last():
+                    print(", ", end='')
+        print("]")
+
+    def remove_patron(self, id):
+        Copy.objects.get(id).delete()
 
     def modify_doc(self):
         pass
@@ -265,6 +308,46 @@ class Librarian(User):  # (User,UserCard)
                                           second_name='test', address='test',
                                           phone_number='test', library_card_number=num,
                                           library=library)
+
+    # for tests
+
+    def create_p1(self, library):
+        return Faculty.objects.create(login='test', password='test', first_name='Sergey', second_name='Afonso',
+                                      address="Via Margutta, 3", phone_number='30001', library_card_number='1010',
+                                      library=library)
+
+    def create_p2(self, library):
+        return Student.objects.create(login='test', password='test', first_name='Nadia', second_name='Teixeira',
+                                      address="Via Sacra, 13", phone_number='30002', library_card_number='1011',
+                                      library=library)
+
+    def create_p3(self, library):
+        return Student.objects.create(login='test', password='test', first_name='Elvira', second_name='Espindola',
+                                      address="Via del Corso, 22", phone_number='30003', library_card_number='1100',
+                                      library=library)
+
+    def create_b1(self, library):
+        return Book.objects.create(library=library, title="Introduction to Algorithms", price_value=0,
+                                   is_best_seller=False,
+                                   edition="Third edition", publisher='MIT Press', year=2009)
+
+    def create_b2(self, library):
+        return Book.objects.create(library=library,
+                                   title="Design Patterns: Elements of Reusable Object-Oriented Software",
+                                   price_value=0, is_best_seller=True, edition="First edition",
+                                   publisher="Addison-Wesley Professional", year=2003)
+
+    def create_b3(self, library):
+        return ReferenceBook.objects.create(library=library, title="The Mythical Man-month", price_value=0,
+                                            is_best_seller=False, edition="Second edition",
+                                            publisher="Addison-Wesley Longman Publishing Co., Inc", year=1995)
+
+    def create_av1(self, library):
+        return AudioVideo.objects.create(library=library, title="Null References: The Billion Dollar Mistake",
+                                         price_value=0)
+
+    def create_av2(self, library):
+        return AudioVideo.objects.create(library=library, title="Information Entropy", price_value=0)
 
     def user_card(self, login, password, first_name, second_name, address, phone_number, fac_or_stu):
         new_user = User()

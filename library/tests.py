@@ -1,11 +1,6 @@
-'''
 import datetime
-
 from django.test import TestCase
-
 from library.models import *
-from users.models import *
-from documents.models import *
 
 
 def create_library():
@@ -13,18 +8,47 @@ def create_library():
 
 
 def create_user(class_model, library, num):
-    return class_model.objects.create(login='test',
-                                      password='test', first_name='test',
-                                      second_name='test', address='test',
-                                      phone_number='test', library_card_number=num,
-                                      library=library)
+    return class_model.objects.create(login='test', password='test', first_name='test', second_name='test',
+                                      address='test', phone_number='test', library_card_number=num, library=library)
+
+
+def create_p1(library):
+    return Faculty.objects.create(login='test', password='test', first_name='Sergey', second_name='Afonso',
+                                  address="Via Margutta, 3", phone_number='30001', library_card_number='1010',
+                                  library=library)
+
+
+def create_p2(library):
+    return Student.objects.create(login='test', password='test', first_name='Nadia', second_name='Teixeira',
+                                  address="Via Sacra, 13", phone_number='30002', library_card_number='1011', library=library)
+
+
+def create_p3(library):
+    return Student.objects.create(login='test', password='test', first_name='Elvira', second_name='Espindola',
+                                  address="Via del Corso, 22", phone_number='30003', library_card_number='1100', library=library)
 
 
 def create_book(library, is_best_seller=False, reference=False, title='"Good_book"'):
     class_model = ReferenceBook if reference else Book
-    return class_model.objects.create(library=library,
-                                      title=title, price_value=0, is_best_seller=is_best_seller,
-                                      edition=0, publisher='test', publish_time=datetime.date.today())
+    return class_model.objects.create(library=library, title=title, price_value=0, is_best_seller=is_best_seller,
+                                      edition='0', publisher='test', year=2000)
+
+
+def create_b1(library):
+    return Book.objects.create(library=library, title="Introduction to Algorithms", price_value=0, is_best_seller=False,
+                                      edition="Third edition", publisher='MIT Press', year=2009)
+
+
+def create_b2(library):
+    return Book.objects.create(library=library, title="Design Patterns: Elements of Reusable Object-Oriented Software",
+                               price_value=0, is_best_seller=True, edition="First edition",
+                               publisher="Addison-Wesley Professional", year=2003)
+
+
+def create_b3(library):
+    return ReferenceBook.objects.create(library=library, title="The Mythical Man-month", price_value=0,
+                                        is_best_seller=False, edition="Second edition",
+                                        publisher="Addison-Wesley Longman Publishing Co., Inc", year=1995)
 
 
 def create_copy(document, number):
@@ -32,9 +56,22 @@ def create_copy(document, number):
 
 
 def create_author():
-    return Author.objects.create(name='Beautifull_author')
+    return Author.objects.create(name='Unnamed_author')
 
 
+def create_av(library, title="Test"):
+    return AudioVideo.objects.create(library=library, title=title, price_value=0)
+
+
+def create_av1(library):
+    return AudioVideo.objects.create(library=library, title="Null References: The Billion Dollar Mistake", price_value=0)
+
+
+def create_av2(library):
+    return AudioVideo.objects.create(library=library, title="Information Entropy", price_value=0)
+
+
+"""
 class FirstTestCase(TestCase):
     def setUp(self):
         lib = create_library()
@@ -119,8 +156,8 @@ class FourthTestCase(TestCase):
 
 class FifthTestCase(TestCase):
     def setUp(self):
-        lib = create_library(
-            create_user(Patron, lib, 0)
+        lib = create_library()
+        create_user(Patron, lib, 0)
         create_user(Patron, lib, 1)
         create_user(Patron, lib, 2)
         create_user(Librarian, lib, 3)
@@ -276,4 +313,204 @@ class TenthTestCase(TestCase):
             print("patron checks out the book " + book_b.title)
         else:
             print("patron can't check out the book " + book_b.title)
-'''
+"""
+
+
+class FirstTestCase(TestCase):
+    def setUp(self):
+        library = create_library()
+        librarian = create_user(Librarian, library, 1)
+
+    def testCase(self):
+        print("Test 1")
+        library = Library.objects.get(1)
+        librarian = Librarian.objects.get(1)
+
+        b1 = librarian.create_b1(self, library)
+        librarian.create_copy(b1, 3)
+        b2 = librarian.create_b2(self, library)
+        librarian.create_copy(b2, 2)
+        b3 = librarian.create_b3(self, library)
+        librarian.create_copy(b3, 1)
+
+        av1 = librarian.create_av1(library)
+        av2 = librarian.create_av2(library)
+
+        p1 = librarian.create_p1(library)
+        p2 = librarian.create_p2(library)
+        p3 = librarian.create_p3(library)
+
+        print("The number of documents in the System is " + Document.objects.count() +
+              "and the number of users is " + User.objects.count())
+
+    def setDown(self):
+        Patron.objects.all.delete()
+        AudioVideo.objects.all.delete()
+        Copy.objects.all.delete()
+        Book.objects.all.delete()
+        Library.objects.all.delete()
+        Librarian.objects.all.delete()
+
+
+class SecondTestCase(TestCase):
+    def setUp(self):
+        FirstTestCase.setUp()
+        FirstTestCase.testCase()
+
+    def testCase(self):
+        print("Test 2")
+        librarian = Librarian.objects.get(1)
+        b1 = Book.objects.get(1)
+        b3 = Book.objects.get(3)
+
+        librarian.remove_copy(b1, 2)
+        librarian.remove_copy(b3, 1)
+        librarian.remove_patron(2)
+
+        print("The number of documents in the System is " + Document.objects.count() +
+              "and the number of users is " + User.objects.count())
+
+    def setDown(self):
+        FirstTestCase.setDown()
+
+
+class ThirdTestCase(TestCase):
+    def setUp(self):
+        FirstTestCase.setUp()
+        FirstTestCase.testCase()
+
+    def testCase(self):
+        print("Test 3")
+        librarian = Librarian.objects.get(1)
+
+        librarian.patron_information(1)
+        librarian.patron_information(3)
+
+    def setDown(self):
+        FirstTestCase.setDown()
+
+
+class FourthTestCase(TestCase):
+    def setUp(self):
+        SecondTestCase.setUp()
+        SecondTestCase.testCase()
+
+    def testCase(self):
+        print("Test 4")
+        librarian = Librarian.objects.get(1)
+        librarian.patron_information(2)
+        librarian.patron_information(3)
+
+    def setDown(self):
+        FirstTestCase.setDown()
+
+
+class FifthTestCase(TestCase):
+    def setUp(self):
+        SecondTestCase.setUp()
+        SecondTestCase.testCase()
+
+    def testCase(self):
+        print("Test 5")
+        p2 = Patron.objects.get(2)
+        b1 = Book.objects.get(1)
+        if p2.in_library():
+            p2.check_out_doc(b1)
+        else:
+            print("p2 is not a patron of the library hence he cannot check out any document.")
+
+    def setDown(self):
+        FirstTestCase.setDown()
+
+
+class SixthTestCase(TestCase):
+    def setUp(self):
+        SecondTestCase.setUp()
+        SecondTestCase.testCase()
+
+    def testCase(self):
+        print("Test 6")
+        librarian = Librarian.objects.get(1)
+        b1 = Book.objects.get(1)
+        b2 = Book.objects.get(2)
+        p1 = Patron.objects.get(1)
+        p3 = Patron.objects.get(3)
+        p1.check_out_doc(b1)
+        p3.check_out_doc(b1)
+        p3.check_out_doc(b2)
+        librarian.patron_information(1)
+        librarian.patron_information(3)
+
+    def setDown(self):
+        FirstTestCase.setDown()
+
+
+class SeventhTestCase(TestCase):
+    def setUp(self):
+        FirstTestCase.setUp()
+        FirstTestCase.testCase()
+
+    def testCase(self):
+        librarian = Librarian.objects.get(1)
+        b1 = Book.objects.get(1)
+        b2 = Book.objects.get(2)
+        b3 = Book.objects.get(3)
+        p1 = Patron.objects.get(1)
+        p2 = Patron.objects.get(2)
+        p3 = Patron.objects.get(3)
+        av1 = AudioVideo.objects.get(1)
+        av2 = AudioVideo.objects.get(2)
+
+        p1.check_out_doc(b1)
+        p1.check_out_doc(b2)
+        p1.check_out_doc(b3)
+        p1.check_out_doc(av1)
+        p2.check_out_doc(b1)
+        p2.check_out_doc(b2)
+        p2.check_out_doc(av2)
+        librarian.patron_information(1)
+        librarian.patron_information(2)
+
+
+# class EighthTestCase(TestCase):
+#     def setUp(self):
+#         FirstTestCase.setUp()
+#         FirstTestCase.testCase()
+#
+#         b1 = Book.objects.get(1)
+#         b2 = Book.objects.get(2)
+#         p1 = Patron.objects.get(1)
+#         p2 = Patron.objects.get(2)
+#         av1 = AudioVideo.objects.get(1)
+#
+#         datetime.date = 02.09
+#         p1.check_out_doc(b1)
+#         datetime.date = 02.02
+#         p1.check_out_doc(b2)
+#         datetime.date = 02.05
+#         p2.check_out_doc(b1)
+#         datetime.date = 02.17
+#         p2.check_out_doc(av1)
+#
+#     def testCase(self):
+#         librarian = Librarian.objects.get(1)
+#         p1 = Patron.objects.get(1)
+#         p2 = Patron.objects.get(2)
+#
+#         datetime.date = 03.05
+#
+#         print("p1  Overdue: [(", end='')
+#         for copy in p1.user_card.copies:
+#             if copy.overdue_date > datetime.date:
+#                 print("b2,", datetime.datetime - copy.overdue_date, "days")
+#
+#     def setDown(self):
+#         FirstTestCase.setDown()
+
+
+class NinthTestCase(TestCase):
+    def setUp(self):
+        FirstTestCase.setUp()
+
+    def testCase(self):
+        FirstTestCase.testCase()
