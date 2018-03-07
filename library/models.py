@@ -297,7 +297,7 @@ class Librarian(User):  # (User,UserCard)
         print("]")
 
     def remove_patron(self, id):
-        Copy.objects.get(id).delete()
+        Copy.objects.get(id=id).delete()
 
     def modify_doc(self):
         pass
@@ -312,19 +312,22 @@ class Librarian(User):  # (User,UserCard)
     # for tests
 
     def create_p1(self, library):
-        return Faculty.objects.create(login='test', password='test', first_name='Sergey', second_name='Afonso',
-                                      address="Via Margutta, 3", phone_number='30001', library_card_number='1010',
-                                      library=library)
+        user = Faculty.objects.create(login='test', password='test', first_name='Sergey', second_name='Afonso',
+                                      address="Via Margutta, 3", phone_number='30001')
+        UserCard.objects.create(user=user, library_card_number=1010, library=library)
+        return user
 
     def create_p2(self, library):
-        return Student.objects.create(login='test', password='test', first_name='Nadia', second_name='Teixeira',
-                                      address="Via Sacra, 13", phone_number='30002', library_card_number='1011',
-                                      library=library)
+        user = Student.objects.create(login='test', password='test', first_name='Nadia', second_name='Teixeira',
+                                      address="Via Sacra, 13", phone_number='30002')
+        UserCard.objects.create(user=user, library_card_number=1011, library=library)
+        return user
 
     def create_p3(self, library):
-        return Student.objects.create(login='test', password='test', first_name='Elvira', second_name='Espindola',
-                                      address="Via del Corso, 22", phone_number='30003', library_card_number='1100',
-                                      library=library)
+        user = Student.objects.create(login='test', password='test', first_name='Elvira', second_name='Espindola',
+                                      address="Via del Corso, 22", phone_number='30003')
+        UserCard.objects.create(user=user, library_card_number=1100, library=library)
+        return user
 
     def create_b1(self, library):
         return Book.objects.create(library=library, title="Introduction to Algorithms", price_value=0,
