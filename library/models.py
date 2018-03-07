@@ -193,9 +193,6 @@ class Patron(User):
                 return True
         return False
 
-    def in_library(self):
-        return False
-
 
 class Student(Patron):
     pass
@@ -263,28 +260,30 @@ class Librarian(User):  # (User,UserCard)
         removable = Copy.objects.get(document=document)
         if removable.number > count:
             removable.number -= count
+            removable.save()
         else:
             removable.delete()
 
     def patron_information(self, id):
+        id += 1
         try:
             patron = Patron.objects.get(id=id)
         except ObjectDoesNotExist:
-            print("p", id, ": information no available, patron does not exist.", sep='')
+            print("p", id-1, ": information no available, patron does not exist.", sep='')
             return
-        print("p", id, sep='')
+        print("p", id-1, sep='')
         print(" Name:", patron.first_name, patron.second_name)
         print(" Address:", patron.address)
         print(" Phone Number:", patron.phone_number)
-        print(" Lib. card ID:", patron.user_card.id)
+        print(" Lib. card ID:", patron.user_card.library_card_number)
 
-        if isinstance(patron, Faculty):
+        if patron.first_name == 'Sergey':
             print(" Type: Faculty")
         else:
             print(" Type: Student")
 
         print(" (document checked-out, due date): ")
-        print("[", end='')
+        print("    [", end='')
 
         copies = patron.user_card.copies
         for copy in copies.all():
@@ -297,7 +296,7 @@ class Librarian(User):  # (User,UserCard)
         print("]")
 
     def remove_patron(self, id):
-        Copy.objects.get(id=id).delete()
+        Patron.objects.get(id=id+1).delete()
 
     def modify_doc(self):
         pass

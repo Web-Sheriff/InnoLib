@@ -1,6 +1,7 @@
 import datetime
 from django.test import TestCase
 from library.models import *
+from django.core.exceptions import ObjectDoesNotExist
 
 
 def create_library():
@@ -397,7 +398,11 @@ class FirstTestCase(TestCase):
         p2 = librarian.create_p2(library)
         p3 = librarian.create_p3(library)
 
-        print("The number of documents in the System is " + str(Document.objects.count()) +
+        copy_count = 0
+        for copy in Copy.objects.filter():
+            copy_count += copy.number
+
+        print("The number of documents in the System is " + str(copy_count + AudioVideo.objects.count()) +
               " and the number of users is " + str(User.objects.count()))
 
         TestCaseSettings.bdclear(self)
@@ -417,7 +422,11 @@ class SecondTestCase(TestCase):
         librarian.remove_copy(b3, 1)
         librarian.remove_patron(2)
 
-        print("The number of documents in the System is " + str(Document.objects.count()) +
+        copy_count = 0
+        for copy in Copy.objects.filter():
+            copy_count += copy.number
+
+        print("The number of documents in the System is " + str(copy_count + AudioVideo.objects.count()) +
               " and the number of users is " + str(User.objects.count()))
 
         TestCaseSettings.bdclear(self)
@@ -456,12 +465,13 @@ class FifthTestCase(TestCase):
 
     def testCase(self):
         print("Test 5")
-        p2 = Patron.objects.get(first_name='Nadia')
-        b1 = Book.objects.get(id=1)
-        if p2.in_library():
-            p2.check_out_doc(b1)
-        else:
+        try:
+            p2 = Patron.objects.get(id=3)
+        except ObjectDoesNotExist:
             print("p2 is not a patron of the library hence he cannot check out any document.")
+            return
+        b1 = Book.objects.get(id=1)
+        p2.check_out_doc(b1)
 
         TestCaseSettings.bdclear(self)
 
@@ -475,8 +485,9 @@ class SixthTestCase(TestCase):
         librarian = Librarian.objects.get(id=1)
         b1 = Book.objects.get(id=1)
         b2 = Book.objects.get(id=2)
-        p1 = Patron.objects.get(first_name='Sergey')
-        p3 = Patron.objects.get(first_name='Elvira')
+
+        p1 = Patron.objects.get(id=2)
+        p3 = Patron.objects.get(id=4)
         p1.check_out_doc(b1)
         p3.check_out_doc(b1)
         p3.check_out_doc(b2)
@@ -491,13 +502,14 @@ class SeventhTestCase(TestCase):
         TestCaseSettings.first(self)
 
     def testCase(self):
+        print("Test 7")
         librarian = Librarian.objects.get(id=1)
         b1 = Book.objects.get(id=1)
         b2 = Book.objects.get(id=2)
         b3 = Book.objects.get(id=3)
-        p1 = Patron.objects.get(first_name='Sergey')
-        p2 = Patron.objects.get(first_name='Nadia')
-        p3 = Patron.objects.get(first_name='Elvira')
+        p1 = Patron.objects.get(id=2)
+        p2 = Patron.objects.get(id=3)
+        p3 = Patron.objects.get(id=4)
         av1 = AudioVideo.objects.get(title="Null References: The Billion Dollar Mistake")
         av2 = AudioVideo.objects.get(title="Information Entropy")
 
@@ -517,6 +529,7 @@ class SeventhTestCase(TestCase):
 # class EighthTestCase(TestCase):
 #     def setUp(self):
 #         TestCaseSettings.first(self)
+#         print("Test 8")
 #
 #         b1 = Book.objects.get(1)
 #         b2 = Book.objects.get(2)
@@ -553,4 +566,27 @@ class NinthTestCase(TestCase):
         FirstTestCase.setUp(self)
 
     def testCase(self):
-        FirstTestCase.testCase(self)
+        print("Test 9")
+        library = Library.objects.get(id=1)
+        librarian = Librarian.objects.get(id=1)
+
+        b1 = librarian.create_b1(library)
+        librarian.create_copy(b1, 3)
+        b2 = librarian.create_b2(library)
+        librarian.create_copy(b2, 2)
+        b3 = librarian.create_b3(library)
+        librarian.create_copy(b3, 1)
+
+        av1 = librarian.create_av1(library)
+        av2 = librarian.create_av2(library)
+
+        p1 = librarian.create_p1(library)
+        p2 = librarian.create_p2(library)
+        p3 = librarian.create_p3(library)
+
+        copy_count = 0
+        for copy in Copy.objects.filter():
+            copy_count += copy.number
+
+        print("The number of documents in the System is " + str(copy_count + AudioVideo.objects.count()) +
+              " and the number of users is " + str(User.objects.count()))
