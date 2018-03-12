@@ -1,6 +1,7 @@
 import datetime
 from django.test import TestCase
 from library.models import *
+from django.core.exceptions import ObjectDoesNotExist
 
 
 def create_library():
@@ -8,24 +9,31 @@ def create_library():
 
 
 def create_user(class_model, library, num):
-    return class_model.objects.create(login='test', password='test', first_name='test', second_name='test',
-                                      address='test', phone_number='test', library_card_number=num, library=library)
+    user = class_model.objects.create(login='test', password='test', first_name='test', second_name='test',
+                                      address='test', phone_number='test')
+    UserCard.objects.create(user=user, library_card_number=num, library=library)
+    return user
 
 
 def create_p1(library):
-    return Faculty.objects.create(login='test', password='test', first_name='Sergey', second_name='Afonso',
-                                  address="Via Margutta, 3", phone_number='30001', library_card_number='1010',
-                                  library=library)
+    user = Faculty.objects.create(login='test', password='test', first_name='Sergey', second_name='Afonso',
+                                  address="Via Margutta, 3", phone_number='30001')
+    UserCard.objects.create(user=user, library_card_number=1010, library=library)
+    return user
 
 
 def create_p2(library):
-    return Student.objects.create(login='test', password='test', first_name='Nadia', second_name='Teixeira',
-                                  address="Via Sacra, 13", phone_number='30002', library_card_number='1011', library=library)
+    user = Student.objects.create(login='test', password='test', first_name='Nadia', second_name='Teixeira',
+                                  address="Via Sacra, 13", phone_number='30002')
+    UserCard.objects.create(user=user, library_card_number=1011, library=library)
+    return user
 
 
 def create_p3(library):
-    return Student.objects.create(login='test', password='test', first_name='Elvira', second_name='Espindola',
-                                  address="Via del Corso, 22", phone_number='30003', library_card_number='1100', library=library)
+    user = Student.objects.create(login='test', password='test', first_name='Elvira', second_name='Espindola',
+                                  address="Via del Corso, 22", phone_number='30003')
+    UserCard.objects.create(user=user, library_card_number=1100, library=library)
+    return user
 
 
 def create_book(library, is_best_seller=False, reference=False, title='"Good_book"'):
@@ -316,21 +324,16 @@ class TenthTestCase(TestCase):
 """
 
 
-class FirstTestCase(TestCase):
-    def setUp(self):
+class TestCaseSettings:
+    def first(self):
         library = create_library()
         librarian = create_user(Librarian, library, 1)
 
-    def testCase(self):
-        print("Test 1")
-        library = Library.objects.get(1)
-        librarian = Librarian.objects.get(1)
-
-        b1 = librarian.create_b1(self, library)
+        b1 = librarian.create_b1(library)
         librarian.create_copy(b1, 3)
-        b2 = librarian.create_b2(self, library)
+        b2 = librarian.create_b2(library)
         librarian.create_copy(b2, 2)
-        b3 = librarian.create_b3(self, library)
+        b3 = librarian.create_b3(library)
         librarian.create_copy(b3, 1)
 
         av1 = librarian.create_av1(library)
@@ -340,126 +343,175 @@ class FirstTestCase(TestCase):
         p2 = librarian.create_p2(library)
         p3 = librarian.create_p3(library)
 
-        print("The number of documents in the System is " + Document.objects.count() +
-              "and the number of users is " + User.objects.count())
+    def second(self):
+        library = create_library()
+        librarian = create_user(Librarian, library, 1)
 
-    def setDown(self):
-        Patron.objects.all.delete()
-        AudioVideo.objects.all.delete()
-        Copy.objects.all.delete()
-        Book.objects.all.delete()
-        Library.objects.all.delete()
-        Librarian.objects.all.delete()
+        b1 = librarian.create_b1(library)
+        librarian.create_copy(b1, 3)
+        b2 = librarian.create_b2(library)
+        librarian.create_copy(b2, 2)
+        b3 = librarian.create_b3(library)
+        librarian.create_copy(b3, 1)
 
+        av1 = librarian.create_av1(library)
+        av2 = librarian.create_av2(library)
 
-class SecondTestCase(TestCase):
-    def setUp(self):
-        FirstTestCase.setUp()
-        FirstTestCase.testCase()
-
-    def testCase(self):
-        print("Test 2")
-        librarian = Librarian.objects.get(1)
-        b1 = Book.objects.get(1)
-        b3 = Book.objects.get(3)
+        p1 = librarian.create_p1(library)
+        p2 = librarian.create_p2(library)
+        p3 = librarian.create_p3(library)
 
         librarian.remove_copy(b1, 2)
         librarian.remove_copy(b3, 1)
         librarian.remove_patron(2)
 
-        print("The number of documents in the System is " + Document.objects.count() +
-              "and the number of users is " + User.objects.count())
+    def bdclear(self):
+        Patron.objects.filter().delete()
+        AudioVideo.objects.filter().delete()
+        Copy.objects.filter().delete()
+        Book.objects.filter().delete()
+        Library.objects.filter().delete()
+        Librarian.objects.filter().delete()
 
-    def setDown(self):
-        FirstTestCase.setDown()
+
+class FirstTestCase(TestCase):
+    def setUp(self):
+        library = create_library()
+        librarian = create_user(Librarian, library, 1)
+
+    def testCase(self):
+        print("Test 1")
+        library = Library.objects.get(id=1)
+        librarian = Librarian.objects.get(id=1)
+
+        b1 = librarian.create_b1(library)
+        librarian.create_copy(b1, 3)
+        b2 = librarian.create_b2(library)
+        librarian.create_copy(b2, 2)
+        b3 = librarian.create_b3(library)
+        librarian.create_copy(b3, 1)
+
+        av1 = librarian.create_av1(library)
+        av2 = librarian.create_av2(library)
+
+        p1 = librarian.create_p1(library)
+        p2 = librarian.create_p2(library)
+        p3 = librarian.create_p3(library)
+
+        copy_count = 0
+        for copy in Copy.objects.filter():
+            copy_count += copy.number
+
+        print("The number of documents in the System is " + str(copy_count + AudioVideo.objects.count()) +
+              " and the number of users is " + str(User.objects.count()))
+
+        TestCaseSettings.bdclear(self)
+
+
+class SecondTestCase(TestCase):
+    def setUp(self):
+        TestCaseSettings.first(self)
+
+    def testCase(self):
+        print("Test 2")
+        librarian = Librarian.objects.get(id=1)
+        b1 = Book.objects.get(id=1)
+        b3 = Book.objects.get(id=3)
+
+        librarian.remove_copy(b1, 2)
+        librarian.remove_copy(b3, 1)
+        librarian.remove_patron(2)
+
+        copy_count = 0
+        for copy in Copy.objects.filter():
+            copy_count += copy.number
+
+        print("The number of documents in the System is " + str(copy_count + AudioVideo.objects.count()) +
+              " and the number of users is " + str(User.objects.count()))
+
+        TestCaseSettings.bdclear(self)
 
 
 class ThirdTestCase(TestCase):
     def setUp(self):
-        FirstTestCase.setUp()
-        FirstTestCase.testCase()
+        TestCaseSettings.first(self)
 
     def testCase(self):
         print("Test 3")
-        librarian = Librarian.objects.get(1)
+        librarian = Librarian.objects.get(id=1)
 
         librarian.patron_information(1)
         librarian.patron_information(3)
 
-    def setDown(self):
-        FirstTestCase.setDown()
+        TestCaseSettings.bdclear(self)
 
 
 class FourthTestCase(TestCase):
     def setUp(self):
-        SecondTestCase.setUp()
-        SecondTestCase.testCase()
+        TestCaseSettings.second(self)
 
     def testCase(self):
         print("Test 4")
-        librarian = Librarian.objects.get(1)
+        librarian = Librarian.objects.get(id=1)
         librarian.patron_information(2)
         librarian.patron_information(3)
 
-    def setDown(self):
-        FirstTestCase.setDown()
+        TestCaseSettings.bdclear(self)
 
 
 class FifthTestCase(TestCase):
     def setUp(self):
-        SecondTestCase.setUp()
-        SecondTestCase.testCase()
+        TestCaseSettings.second(self)
 
     def testCase(self):
         print("Test 5")
-        p2 = Patron.objects.get(2)
-        b1 = Book.objects.get(1)
-        if p2.in_library():
-            p2.check_out_doc(b1)
-        else:
+        try:
+            p2 = Patron.objects.get(id=3)
+        except ObjectDoesNotExist:
             print("p2 is not a patron of the library hence he cannot check out any document.")
+            return
+        b1 = Book.objects.get(id=1)
+        p2.check_out_doc(b1)
 
-    def setDown(self):
-        FirstTestCase.setDown()
+        TestCaseSettings.bdclear(self)
 
 
 class SixthTestCase(TestCase):
     def setUp(self):
-        SecondTestCase.setUp()
-        SecondTestCase.testCase()
+        TestCaseSettings.second(self)
 
     def testCase(self):
         print("Test 6")
-        librarian = Librarian.objects.get(1)
-        b1 = Book.objects.get(1)
-        b2 = Book.objects.get(2)
-        p1 = Patron.objects.get(1)
-        p3 = Patron.objects.get(3)
+        librarian = Librarian.objects.get(id=1)
+        b1 = Book.objects.get(id=1)
+        b2 = Book.objects.get(id=2)
+
+        p1 = Patron.objects.get(id=2)
+        p3 = Patron.objects.get(id=4)
         p1.check_out_doc(b1)
         p3.check_out_doc(b1)
         p3.check_out_doc(b2)
         librarian.patron_information(1)
         librarian.patron_information(3)
 
-    def setDown(self):
-        FirstTestCase.setDown()
+        TestCaseSettings.bdclear(self)
 
 
 class SeventhTestCase(TestCase):
     def setUp(self):
-        FirstTestCase.setUp()
-        FirstTestCase.testCase()
+        TestCaseSettings.first(self)
 
     def testCase(self):
-        librarian = Librarian.objects.get(1)
-        b1 = Book.objects.get(1)
-        b2 = Book.objects.get(2)
-        b3 = Book.objects.get(3)
-        p1 = Patron.objects.get(1)
-        p2 = Patron.objects.get(2)
-        p3 = Patron.objects.get(3)
-        av1 = AudioVideo.objects.get(1)
-        av2 = AudioVideo.objects.get(2)
+        print("Test 7")
+        librarian = Librarian.objects.get(id=1)
+        b1 = Book.objects.get(id=1)
+        b2 = Book.objects.get(id=2)
+        b3 = Book.objects.get(id=3)
+        p1 = Patron.objects.get(id=2)
+        p2 = Patron.objects.get(id=3)
+        p3 = Patron.objects.get(id=4)
+        av1 = AudioVideo.objects.get(title="Null References: The Billion Dollar Mistake")
+        av2 = AudioVideo.objects.get(title="Information Entropy")
 
         p1.check_out_doc(b1)
         p1.check_out_doc(b2)
@@ -471,11 +523,13 @@ class SeventhTestCase(TestCase):
         librarian.patron_information(1)
         librarian.patron_information(2)
 
+        TestCaseSettings.bdclear(self)
+
 
 # class EighthTestCase(TestCase):
 #     def setUp(self):
-#         FirstTestCase.setUp()
-#         FirstTestCase.testCase()
+#         TestCaseSettings.first(self)
+#         print("Test 8")
 #
 #         b1 = Book.objects.get(1)
 #         b2 = Book.objects.get(2)
@@ -504,13 +558,35 @@ class SeventhTestCase(TestCase):
 #             if copy.overdue_date > datetime.date:
 #                 print("b2,", datetime.datetime - copy.overdue_date, "days")
 #
-#     def setDown(self):
-#         FirstTestCase.setDown()
+#         TestCaseSettings.bdclear(self)
 
 
 class NinthTestCase(TestCase):
     def setUp(self):
-        FirstTestCase.setUp()
+        FirstTestCase.setUp(self)
 
     def testCase(self):
-        FirstTestCase.testCase()
+        print("Test 9")
+        library = Library.objects.get(id=1)
+        librarian = Librarian.objects.get(id=1)
+
+        b1 = librarian.create_b1(library)
+        librarian.create_copy(b1, 3)
+        b2 = librarian.create_b2(library)
+        librarian.create_copy(b2, 2)
+        b3 = librarian.create_b3(library)
+        librarian.create_copy(b3, 1)
+
+        av1 = librarian.create_av1(library)
+        av2 = librarian.create_av2(library)
+
+        p1 = librarian.create_p1(library)
+        p2 = librarian.create_p2(library)
+        p3 = librarian.create_p3(library)
+
+        copy_count = 0
+        for copy in Copy.objects.filter():
+            copy_count += copy.number
+
+        print("The number of documents in the System is " + str(copy_count + AudioVideo.objects.count()) +
+              " and the number of users is " + str(User.objects.count()))
