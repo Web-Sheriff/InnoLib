@@ -68,11 +68,23 @@ class Book(Document):
 
 
 class ReferenceBook(Book):
-    pass
+    title = models.CharField(max_length=250)
+    library = models.ForeignKey(Library, on_delete=models.DO_NOTHING, related_name='reference')
+    authors = models.ManyToManyField(Author, related_name='reference')
+    keywords = models.ManyToManyField(Keyword, related_name='reference')
+
+    def booking_period(self, user):
+        return datetime.timedelta(weeks=2)
 
 
 class AudioVideo(Document):
-    pass
+    title = models.CharField(max_length=250)
+    library = models.ForeignKey(Library, on_delete=models.DO_NOTHING, related_name='audio video')
+    authors = models.ManyToManyField(Author, related_name='audio video')
+    keywords = models.ManyToManyField(Keyword, related_name='audio video')
+
+    def booking_period(self, user):
+        return datetime.timedelta(weeks=2)
 
 
 class Editor(models.Model):
@@ -82,6 +94,13 @@ class Editor(models.Model):
 
 class Journal(models.Model):
     title = models.CharField(max_length=250)
+    library = models.ForeignKey(Library, on_delete=models.DO_NOTHING, related_name='journals')
+    authors = models.ManyToManyField(Author, related_name='journals')
+    price_value = models.IntegerField()
+    keywords = models.ManyToManyField(Keyword, related_name='journals')
+
+    def booking_period(self, user):
+        return datetime.timedelta(weeks=2)
 
 
 class Issue(models.Model):
