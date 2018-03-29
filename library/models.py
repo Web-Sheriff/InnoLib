@@ -48,6 +48,7 @@ class Document(models.Model):
     authors = models.ManyToManyField(Author, related_name='documents')
     price_value = models.IntegerField()
     keywords = models.ManyToManyField(Keyword, related_name='documents')
+    usersQueue = models.ManyToManyField("Patron", related_name='documents')
 
     def booking_period(self, user):
         return datetime.timedelta(weeks=2)
@@ -194,6 +195,7 @@ class Patron(User):
                 self.user_card.save()
                 copy.save()
                 return True
+        document.usersQueue.put(self)
         return False  # there are no available copies
 
     # return copy of the document to the library. If it is not possible returns False
@@ -212,9 +214,6 @@ class Patron(User):
                 return True
         return False
 
-    def in_library(self):
-        return False
-
 
 class Student(Patron):
     pass
@@ -226,6 +225,10 @@ class Faculty(Patron):
         new_fac.login = login
         new_fac.password = password
         new_fac.name = name
+
+
+class VisitingProfessor(Patron):
+    pass
 
 
 class Librarian(User):  # (User,UserCard)
