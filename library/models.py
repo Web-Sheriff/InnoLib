@@ -48,7 +48,7 @@ class Document(models.Model):
     authors = models.ManyToManyField(Author, related_name='documents')
     price_value = models.IntegerField()
     keywords = models.ManyToManyField(Keyword, related_name='documents')
-    usersQueue = models.ManyToManyField("Patron", related_name='documents')
+    waitingQueue = models.ManyToManyField("Patron", related_name='documents')  # need to implement priority queue (6)
 
     def booking_period(self, user):
         return datetime.timedelta(weeks=2)
@@ -189,7 +189,8 @@ class Patron(User):
                 self.user_card.save()
                 copy.save()
                 return True
-        document.usersQueue.put(self)
+        document.waitingQueue.add(self)
+        document.waitingQueue.save()
         return False  # there are no available copies
 
     # return copy of the document to the library. If it is not possible returns False
