@@ -69,8 +69,6 @@ class Book(Document):
 
 
 class ReferenceBook(Book):
-    title = models.CharField(max_length=250)
-    library = models.ForeignKey(Library, on_delete=models.DO_NOTHING, related_name='reference')
     authors = models.ManyToManyField(Author, related_name='reference')
     keywords = models.ManyToManyField(Keyword, related_name='reference')
 
@@ -79,10 +77,6 @@ class ReferenceBook(Book):
 
 
 class AudioVideo(Document):
-    title = models.CharField(max_length=250)
-    library = models.ForeignKey(Library, on_delete=models.DO_NOTHING, related_name='audio video')
-    authors = models.ManyToManyField(Author, related_name='audio video')
-    keywords = models.ManyToManyField(Keyword, related_name='audio video')
 
     def booking_period(self, user):
         return datetime.timedelta(weeks=2)
