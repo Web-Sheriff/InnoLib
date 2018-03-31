@@ -48,7 +48,7 @@ class Document(models.Model):
     authors = models.ManyToManyField(Author, related_name='documents')
     price_value = models.IntegerField()
     keywords = models.ManyToManyField(Keyword, related_name='documents')
-    waitingQueue = models.ManyToManyField("Patron", related_name='documents')  # need to implement priority queue (6)
+    waitingQueue = models.ManyToManyField("Patron", related_name='documents')
 
     def booking_period(self, user):
         return datetime.timedelta(weeks=2)
@@ -61,10 +61,12 @@ class Book(Document):
     year = models.IntegerField()
 
     def booking_period(self, user):
+        if self.is_best_seller:
+            return datetime.timedelta(weeks=2)
         if isinstance(user, Faculty):
             return datetime.timedelta(weeks=4)
-        elif self.is_best_seller:
-            return datetime.timedelta(weeks=2)
+        if isinstance(user, VisitingProfessor):
+            return datetime.timedelta(weeks=1)
         return datetime.timedelta(weeks=3)
 
 
@@ -72,13 +74,12 @@ class ReferenceBook(Book):
     authors = models.ManyToManyField(Author, related_name='reference')
     keywords = models.ManyToManyField(Keyword, related_name='reference')
 
-    def booking_period(self, user):
-        return datetime.timedelta(weeks=2)
-
 
 class AudioVideo(Document):
 
     def booking_period(self, user):
+        if isinstance(user, VisitingProfessor):
+            return datetime.timedelta(weeks=1)
         return datetime.timedelta(weeks=2)
 
 
@@ -95,6 +96,8 @@ class Journal(models.Model):
     keywords = models.ManyToManyField(Keyword, related_name='journals')
 
     def booking_period(self, user):
+        if isinstance(user, VisitingProfessor):
+            return datetime.timedelta(weeks=1)
         return datetime.timedelta(weeks=2)
 
 
@@ -183,12 +186,13 @@ class Patron(User):
                 return False  # user has already checked this document
         for copy in document.copies.all():
             if not copy.is_checked_out:
-                copy.is_checked_out = True
-                self.user_card.copies.add(copy)
-                copy.booking_date = datetime.date.today()
-                self.user_card.save()
-                copy.save()
-                return True
+                CheckOutRequest.objects.create(user_card=self.user_card, copy=copy)
+                # copy.is_checked_out = True
+                # self.user_card.copies.add(copy)
+                # copy.booking_date = datetime.date.today()
+                # self.user_card.save()
+                # copy.save()
+                # return True
         document.waitingQueue.add(self)
         document.waitingQueue.save()
         return False  # there are no available copies
@@ -197,9 +201,10 @@ class Patron(User):
     def return_doc(self, document):
         for copy in self.user_card.copies.all():
             if copy.document == document:
-                self.user_card.copies.exclude(copy)
-                self.user_card.save()
-                Librarian.objects.get(id='1').handed_over_copies.add(copy)
+                HandOverRequest.objects.create(user_card=self.user_card, copy=copy)
+                # self.user_card.copies.exclude(copy)
+                # self.user_card.save()
+                # Librarian.handed_over_copies.add(copy)
                 return True
         return False  # no such document
 
@@ -211,7 +216,8 @@ class Patron(User):
 
 
 class Student(Patron):
-    pass
+    def renew(self):  # 13 requirement
+        pass
 
 
 class Faculty(Patron):
@@ -221,19 +227,38 @@ class Faculty(Patron):
         new_fac.password = password
         new_fac.name = name
 
+    def renew(self):  # 13 requirement
+        pass
+
 
 class VisitingProfessor(Patron):
-    pass
+    def renew(self):  # 14 requirement
+        pass
 
 
-class Librarian(User):  # (User,UserCard)
+class CheckOutRequest(models.Model):
+    user_card = models.ForeignKey(UserCard, on_delete=models.DO_NOTHING, related_name='check_out_request')
+    copy = models.ForeignKey(Copy, on_delete=models.DO_NOTHING, related_name='check_out_request')
 
-    handed_over_copies = models.ManyToManyField(Document)
 
-    def accept_doc(self, copy):
-        copy.is_checked_out = False
-        copy.save()
-        self.handed_over_copies.remove(copy)
+class HandOverRequest(models.Model):
+    user_card = models.ForeignKey(UserCard, on_delete=models.DO_NOTHING, related_name='hand_over_request')
+    copy = models.ForeignKey(Copy, on_delete=models.DO_NOTHING, related_name='hand_over_request')
+
+class Librarian(User):
+
+    def outstanding_request(self, request):
+        request.copy.is_checked_out = True
+        request.user_card.copies.add(request.copy)
+        request.copy.booking_date = datetime.date.today()
+        request.user_card.save()
+        request.copy.save()
+
+    def accept_doc(self, request):
+        request.copy.is_checked_out = False
+        request.user_card.copies.exclude(request.copy)
+        request.user_card.save()
+        request.copy.save()
 
     def count_unchecked_copies(self, doc):
         return len(doc.copies.filter(is_checked_out=False))
