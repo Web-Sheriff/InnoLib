@@ -53,6 +53,9 @@ class Document(models.Model):
     def booking_period(self, user):
         return datetime.timedelta(weeks=2)
 
+    def sort_queue(self):
+        pass
+
 
 class Book(Document):
     is_best_seller = models.BooleanField(default=False)
@@ -152,7 +155,22 @@ class UserCard(models.Model):
     copies = models.ManyToManyField(Copy)
 
 
-# there are 2 types of patrons: students and faculties
+class AvailableDocs(models.Model):
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='available_documents')
+    document = models.OneToOneField(Document, on_delete=models.DO_NOTHING)
+    rights_date = models.DateField(default=datetime.date.today())
+
+    def check_date(self):
+        if self.rights_date != datetime.date.today():
+            self.document.waitingQueue.exclude(user_card=self.user.user_card)
+            self.document.waitingQueue.model.save()
+            self.user.available_documents.exclude(document=self.document, user=self.user)
+            self.user.available_documents.model.save()
+
+            self.document.waitingQueue.objects.get(id=1).available_documents.create(document=self.document, user=self.document.waitingQueue.objects.get(id=1))
+
+
+# there are 3 types of patrons: students, faculties and visiting professors
 class Patron(User):
 
     # search for the documents using string
@@ -184,17 +202,21 @@ class Patron(User):
         for copy in self.user_card.copies.all():
             if copy.document == document:
                 return False  # user has already checked this document
+        if document.waitingQueue.count() > 0:
+            document.waitingQueue.add(self)
+            document.waitingQueue.model.save()
         for copy in document.copies.all():
             if not copy.is_checked_out:
+                for doc in self.available_documents.objects.all():
+                    if document.id == doc.id:
+                        copy.is_checked_out = True
+                        self.user_card.copies.add(copy)
+                        copy.booking_date = datetime.date.today()
+                        self.user_card.save()
+                        copy.save()
+                        return True
                 CheckOutRequest.objects.create(user_card=self.user_card, copy=copy)
-                # copy.is_checked_out = True
-                # self.user_card.copies.add(copy)
-                # copy.booking_date = datetime.date.today()
-                # self.user_card.save()
-                # copy.save()
-                # return True
-        document.waitingQueue.add(self)
-        document.waitingQueue.save()
+                return True
         return False  # there are no available copies
 
     # return copy of the document to the library. If it is not possible returns False
@@ -236,6 +258,18 @@ class VisitingProfessor(Patron):
         pass
 
 
+class Instructor(Faculty):
+    pass
+
+
+class TA(Faculty):
+    pass
+
+
+class Professor(Faculty):
+    pass
+
+
 class CheckOutRequest(models.Model):
     user_card = models.ForeignKey(UserCard, on_delete=models.DO_NOTHING, related_name='check_out_request')
     copy = models.ForeignKey(Copy, on_delete=models.DO_NOTHING, related_name='check_out_request')
@@ -244,6 +278,7 @@ class CheckOutRequest(models.Model):
 class HandOverRequest(models.Model):
     user_card = models.ForeignKey(UserCard, on_delete=models.DO_NOTHING, related_name='hand_over_request')
     copy = models.ForeignKey(Copy, on_delete=models.DO_NOTHING, related_name='hand_over_request')
+
 
 class Librarian(User):
 
@@ -254,11 +289,15 @@ class Librarian(User):
         request.user_card.save()
         request.copy.save()
 
+    def notify(self, user, document):
+        user.available_documents.create(document=document, user=user)
+
     def accept_doc(self, request):
         request.copy.is_checked_out = False
         request.user_card.copies.exclude(request.copy)
         request.user_card.save()
         request.copy.save()
+        self.notify(request.copy.document.waitingQueue.get(id=1), request.copy.document)
 
     def count_unchecked_copies(self, doc):
         return len(doc.copies.filter(is_checked_out=False))
