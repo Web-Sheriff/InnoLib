@@ -275,6 +275,18 @@ class Patron(User):
                 return True
         return False
 
+    def type(self):
+        if isinstance(self, Student):
+            return "Student"
+        if isinstance(self, Instructor):
+            return "Instructor"
+        if isinstance(self, TA):
+            return "TA"
+        if isinstance(self, Professor):
+            return "Professor"
+        if isinstance(self, VisitingProfessor):
+            return "VisitingProfessor"
+
 
 class Student(Patron):
     def renew(self):  # 13 requirement
@@ -353,6 +365,22 @@ class Librarian(User):
 
     def overdue_fines(self):
         pass
+
+    def see_waiting_list(self, doc):
+        queue = []
+        for i in doc.studentsQueue.all():
+            queue.append(i)
+        for i in doc.instructorsQueue.all():
+            queue.append(i)
+        for i in doc.TAsQueue.all():
+            queue.append(i)
+        for i in doc.professorsQueue.all():
+            queue.append(i)
+        for i in doc.visitingProfessorsQueue.all():
+            queue.append(i)
+        print("queue for this book:")
+        for i in queue:
+            print(i.first_name + i.second_name + i.type())
 
     def patrons_docs(self, user, doc):
         for copy in user.user_card.copies.all():
