@@ -154,11 +154,13 @@ class Copy(models.Model):
     need_to_return = models.BooleanField(default=False)
     booking_date = models.DateField(null=True)
     overdue_date = models.DateField(null=True)
+    renew = models.ForeignKey("Librarian")
+    weeks_renew = models.ForeignKey("Librarian")
 
     def check_out(self, user):
         if isinstance(self.document, ReferenceBook):
             return False
-        if self.document.copies.filter(user=user).exists():
+        if not self.document.copies.filter(user=user).exists():
             return False
         self.is_checked_out = True
         self.user = user
@@ -166,6 +168,12 @@ class Copy(models.Model):
         self.overdue_date = self.booking_date + self.document.booking_period(user)
         self.save()
         return True
+
+    def if_overdue(self):
+        return datetime.now() > self.overdue_date
+
+    def overdue(self):
+        return datetime.now() - self.overdue_date
 
 
 # All the classes below are about users
@@ -180,6 +188,7 @@ class User(models.Model):
     second_name = models.CharField(max_length=64)
     address = models.CharField(max_length=256)
     phone_number = models.CharField(max_length=16)
+    fine = models.IntegerField()
 
 
 class UserCard(models.Model):
@@ -208,6 +217,11 @@ class AvailableDocs(models.Model):
 
 # there are 3 types of patrons: students, faculties and visiting professors
 class Patron(User):
+
+    #renew the document for n weeks
+    def renew(self, weeks, queue = Copy.renew):  # 13 requirement
+        queue.add(self)
+        queue.models.save
 
     # search for the documents using string
     def search_doc(self, string):
@@ -277,8 +291,7 @@ class Patron(User):
 
 
 class Student(Patron):
-    def renew(self):  # 13 requirement
-        pass
+    pass
 
 
 class Faculty(Patron):
@@ -288,13 +301,9 @@ class Faculty(Patron):
         new_fac.password = password
         new_fac.name = name
 
-    def renew(self):  # 13 requirement
-        pass
-
 
 class VisitingProfessor(Patron):
-    def renew(self):  # 14 requirement
-        pass
+    pass
 
 
 class Instructor(Faculty):
@@ -320,6 +329,13 @@ class HandOverRequest(models.Model):
 
 
 class Librarian(User):
+
+    def renew_request(self):
+        for renew in Copy.objects.all():
+            weeks = renew.weeks_renew
+            delta = datetime.timedelta(days=weeks//7)
+            renew.overdue_date += delta
+
 
     def outstanding_request(self, request):
         request.copy.is_checked_out = True
@@ -366,8 +382,12 @@ class Librarian(User):
     def manage_patron(self):
         pass
 
-    def check_overdue_copy(self):
-        pass
+    def check_overdue_copies(self):
+        for card in UserCard.objects:
+            for copy in card.copies:
+                if copy.if_overdue():
+                    card.user.fine += copy.overdue*copy.document.price_value
+
 
     def create_book(self, library, is_best_seller, reference, title):
         class_model = ReferenceBook if reference else Book
