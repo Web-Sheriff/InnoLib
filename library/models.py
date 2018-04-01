@@ -1,10 +1,15 @@
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.mail import send_mail
+from django.utils.timezone import now
 import datetime
 import re
 
 
 class Library(models.Model):
+
+    mail = models.EmailField(default='test@gmail.com', max_length=64)
+
     def count_unchecked_copies(self, doc):
         return len(doc.copies.filter(is_checked_out=False))
 
@@ -26,15 +31,15 @@ user card has unique number
 
 
 class Login(models.Model):
-    username = models.EmailField()
-    password = models.CharField(max_length=128)
+    username = models.CharField(max_length=64)
+    password = models.CharField(max_length=64)
 
 
 # All the classes below (but not copy) are about documents. Copy connects library and documents
 
 
 class Author(models.Model):
-    name = models.CharField(max_length=250)
+    name = models.CharField(max_length=64)
 
 
 class Keyword(models.Model):
@@ -44,11 +49,15 @@ class Keyword(models.Model):
 # There are 3 types of documents: books, journal articles and audio/video files
 class Document(models.Model):
     library = models.ForeignKey(Library, on_delete=models.DO_NOTHING, related_name='documents')
-    title = models.CharField(max_length=250)
+    title = models.CharField(max_length=128)
     authors = models.ManyToManyField(Author, related_name='documents')
     price_value = models.IntegerField()
     keywords = models.ManyToManyField(Keyword, related_name='documents')
-    waitingQueue = models.ManyToManyField("Patron", related_name='documents')
+    studentsQueue = models.ManyToManyField("Student", related_name='documents')
+    instructorsQueue = models.ManyToManyField("Instructor", related_name='documents')
+    TAsQueue = models.ManyToManyField("TA", related_name='documents')
+    visitingProfessorsQueue = models.ManyToManyField("VisitingProfessor", related_name='documents')
+    professorsQueue = models.ManyToManyField("Professor", related_name='documents')
 
     def booking_period(self, user):
         return datetime.timedelta(weeks=2)
@@ -56,11 +65,35 @@ class Document(models.Model):
     def sort_queue(self):
         pass
 
+    def queue_type(self, doc, user):
+        if isinstance(user, Student):
+            return doc.studentsQueue
+        elif isinstance(user, Instructor):
+            return doc.instructorsQueue
+        elif isinstance(user, TA):
+            return doc.TAsQueue
+        elif isinstance(user, VisitingProfessor):
+            return doc.visitingProfessorsQueue
+        else:
+            return doc.professorsQueue
+
+    def first_in_queue(self, doc):
+        if doc.studentsQueue.count() > 0:
+            return doc.studentsQueue.first()
+        elif doc.instructorsQueue.count() > 0:
+            return doc.instructorsQueue.first()
+        elif doc.TAsQueue.count() > 0:
+            return doc.TAsQueue.first()
+        elif doc.visitingProfessorsQueue.count() > 0:
+            return doc.visitingProfessorsQueue.first()
+        else:
+            return doc.professorsQueue.first()
+
 
 class Book(Document):
     is_best_seller = models.BooleanField(default=False)
-    edition = models.CharField(max_length=63)
-    publisher = models.CharField(max_length=63)
+    edition = models.CharField(max_length=128)
+    publisher = models.CharField(max_length=64)
     year = models.IntegerField()
 
     def booking_period(self, user):
@@ -87,12 +120,12 @@ class AudioVideo(Document):
 
 
 class Editor(models.Model):
-    first_name = models.CharField(max_length=250)
-    second_name = models.CharField(max_length=250)
+    first_name = models.CharField(max_length=64)
+    second_name = models.CharField(max_length=64)
 
 
 class Journal(models.Model):
-    title = models.CharField(max_length=250)
+    title = models.CharField(max_length=128)
     library = models.ForeignKey(Library, on_delete=models.DO_NOTHING, related_name='journals')
     authors = models.ManyToManyField(Author, related_name='journals')
     price_value = models.IntegerField()
@@ -140,17 +173,18 @@ class Copy(models.Model):
 
 # there are 2 types of users: patrons and librarians
 class User(models.Model):
-    login = models.CharField(max_length=100)
-    password = models.CharField(max_length=50)
-    first_name = models.CharField(max_length=255)
-    second_name = models.CharField(max_length=255)
-    address = models.CharField(max_length=500)
-    phone_number = models.CharField(max_length=20)
+    login = models.CharField(max_length=64)
+    password = models.CharField(max_length=64)
+    mail = models.EmailField(max_length=64)
+    first_name = models.CharField(max_length=64)
+    second_name = models.CharField(max_length=64)
+    address = models.CharField(max_length=256)
+    phone_number = models.CharField(max_length=16)
 
 
 class UserCard(models.Model):
     user = models.OneToOneField(User, on_delete=models.DO_NOTHING, related_name='user_card')
-    library_card_number = models.CharField(max_length=100)
+    library_card_number = models.CharField(max_length=128)
     library = models.ForeignKey(Library, on_delete=models.DO_NOTHING, related_name='user_cards')
     copies = models.ManyToManyField(Copy)
 
@@ -158,16 +192,18 @@ class UserCard(models.Model):
 class AvailableDocs(models.Model):
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='available_documents')
     document = models.OneToOneField(Document, on_delete=models.DO_NOTHING)
-    rights_date = models.DateField(default=datetime.date.today())
+    rights_date = models.DateField(now())
 
     def check_date(self):
         if self.rights_date != datetime.date.today():
-            self.document.waitingQueue.exclude(user_card=self.user.user_card)
-            self.document.waitingQueue.model.save()
+            queue = Document.queue_type(doc=self.document, user=self.user)
+            queue.exclude(user_card=self.user.user_card)
+            queue.model.save()
             self.user.available_documents.exclude(document=self.document, user=self.user)
             self.user.available_documents.model.save()
-
-            self.document.waitingQueue.objects.get(id=1).available_documents.create(document=self.document, user=self.document.waitingQueue.objects.get(id=1))
+            first = Document.first_in_queue(doc=self.document)
+            first.available_documents.create(document=self.document, user=first)
+            Librarian.notify(user=first, document=self.document)
 
 
 # there are 3 types of patrons: students, faculties and visiting professors
@@ -202,9 +238,10 @@ class Patron(User):
         for copy in self.user_card.copies.all():
             if copy.document == document:
                 return False  # user has already checked this document
-        if document.waitingQueue.count() > 0:
-            document.waitingQueue.add(self)
-            document.waitingQueue.model.save()
+        queue = Document.queue_type(doc=document, user=self)
+        if document.studentsQueue.count() + document.TAsQueue.count() + document.instructorsQueue.count() + document.visitingProfessorsQueue.count() + document.professorsQueue.count() > 0:
+            queue.add(self)
+            queue.model.save()
         for copy in document.copies.all():
             if not copy.is_checked_out:
                 for doc in self.available_documents.objects.all():
@@ -212,6 +249,8 @@ class Patron(User):
                         copy.is_checked_out = True
                         self.user_card.copies.add(copy)
                         copy.booking_date = datetime.date.today()
+                        queue.exclude(user_card=self.user_card)
+                        queue.model.save()
                         self.user_card.save()
                         copy.save()
                         return True
@@ -291,13 +330,17 @@ class Librarian(User):
 
     def notify(self, user, document):
         user.available_documents.create(document=document, user=user)
+        send_mail(message='Dear user, you have 1 day to take a copy of document you queued up for. After the expiration of this period you will lose this opportunity and will be removed from the queue. Good luck. Your InnoLib',
+                  subject='Waiting notification', from_email=Library.mail, recipient_list=user.mail)
 
     def accept_doc(self, request):
         request.copy.is_checked_out = False
         request.user_card.copies.exclude(request.copy)
         request.user_card.save()
         request.copy.save()
-        self.notify(request.copy.document.waitingQueue.get(id=1), request.copy.document)
+
+        first = Document.first_in_queue(doc=request.copy.document)
+        self.notify(first, request.copy.document)
 
     def count_unchecked_copies(self, doc):
         return len(doc.copies.filter(is_checked_out=False))
