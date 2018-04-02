@@ -45,7 +45,7 @@ def signup(request):
             return redirect('post_detail', pk=post.pk)
     else:
         form = SignUpForm()
-    return render(request, 'users/templates/library/signup.html', {'form': form})
+    return render(request, 'library/signup.html', {'form': form})
 
 
 def login(request):
@@ -59,5 +59,5 @@ def login(request):
             return redirect('post_detail', pk=post.pk)
     else:
         form = LoginForm()
-    return render(request, 'users/templates/library/login.html', {'form': form})
+    return render(request, 'library//login.html', {'form': form})
 
