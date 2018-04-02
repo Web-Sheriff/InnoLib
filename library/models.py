@@ -1,13 +1,17 @@
-from django.db import models
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.mail import send_mail
-from django.utils.timezone import now
 import datetime
 import re
 
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.mail import send_mail
+from django.db import models
+from django.utils.timezone import now
+
+'''
+Class that generates LMS 
+'''
+
 
 class Library(models.Model):
-
     mail = models.EmailField(default='test@gmail.com', max_length=64)
 
     def count_unchecked_copies(self, doc):
@@ -29,6 +33,10 @@ user card contains all copies, which user checked out
 user card has unique number
 '''
 
+'''
+Login class for identifying in the system
+'''
+
 
 class Login(models.Model):
     username = models.CharField(max_length=64)
@@ -37,9 +45,18 @@ class Login(models.Model):
 
 # All the classes below (but not copy) are about documents. Copy connects library and documents
 
+'''
+Class of books authors
+'''
+
 
 class Author(models.Model):
     name = models.CharField(max_length=64)
+
+
+'''
+Class for searching in the system with keywords of CharField types
+'''
 
 
 class Keyword(models.Model):
@@ -47,6 +64,11 @@ class Keyword(models.Model):
 
 
 # There are 3 types of documents: books, journal articles and audio/video files
+'''
+Class describing types of models kept in the library & all operations to apply with them
+'''
+
+
 class Document(models.Model):
     library = models.ForeignKey(Library, on_delete=models.DO_NOTHING, related_name='documents')
     title = models.CharField(max_length=128)
@@ -90,6 +112,9 @@ class Document(models.Model):
             return doc.professorsQueue.first()
 
 
+''' Derivative from Document class with only book features'''
+
+
 class Book(Document):
     is_best_seller = models.BooleanField(default=False)
     edition = models.CharField(max_length=128)
@@ -106,9 +131,15 @@ class Book(Document):
         return datetime.timedelta(weeks=3)
 
 
+''' Derivative from Document class with only book features'''
+
+
 class ReferenceBook(Book):
     authors = models.ManyToManyField(Author, related_name='reference')
     keywords = models.ManyToManyField(Keyword, related_name='reference')
+
+
+''' Derivative from Document class with only audio and video features'''
 
 
 class AudioVideo(Document):
@@ -119,9 +150,15 @@ class AudioVideo(Document):
         return datetime.timedelta(weeks=2)
 
 
+''' Specific class for editing information in text sources by Editors (updaters of sources)'''
+
+
 class Editor(models.Model):
     first_name = models.CharField(max_length=64)
     second_name = models.CharField(max_length=64)
+
+
+''' Specaial class for Journals (not Document successor) because of special booking case'''
 
 
 class Journal(models.Model):
@@ -137,14 +174,23 @@ class Journal(models.Model):
         return datetime.timedelta(weeks=2)
 
 
+''' Issye information which all journals are going to have'''
+
+
 class Issue(models.Model):
     publication_date = models.DateField()
     editors = models.ManyToManyField(Editor, related_name='issues')
     journal = models.ForeignKey(Journal, on_delete=models.DO_NOTHING, related_name='issues')
 
 
+'''Journal aricles differing from other sources to book'''
+
+
 class JournalArticles(Document):
     issue = models.ForeignKey(Issue, on_delete=models.DO_NOTHING, related_name='journal_articles')
+
+
+''' The main class about copies of documents using in UserCard'''
 
 
 class Copy(models.Model):
@@ -154,7 +200,7 @@ class Copy(models.Model):
     need_to_return = models.BooleanField(default=False)
     booking_date = models.DateField(null=True)
     overdue_date = models.DateField(null=True)
-    renew = models.ForeignKey("Librarian",on_delete=models.DO_NOTHING, related_name='renew')
+    renew = models.ForeignKey("Librarian", on_delete=models.DO_NOTHING, related_name='renew')
     weeks_renew = models.ForeignKey("Librarian", on_delete=models.DO_NOTHING, related_name='weeks_renew')
 
     def check_out(self, user):
@@ -178,6 +224,8 @@ class Copy(models.Model):
 
 # All the classes below are about users
 
+''' The main predecessor of all Patron class derivatives with unique information from login to address'''
+
 
 # there are 2 types of users: patrons and librarians
 class User(models.Model):
@@ -191,11 +239,17 @@ class User(models.Model):
     fine = models.IntegerField()
 
 
+''' UserCard class as contact information which librarian deals with'''
+
+
 class UserCard(models.Model):
     user = models.OneToOneField(User, on_delete=models.DO_NOTHING, related_name='user_card')
     library_card_number = models.CharField(max_length=128)
     library = models.ForeignKey(Library, on_delete=models.DO_NOTHING, related_name='user_cards')
     copies = models.ManyToManyField(Copy)
+
+
+''' Specail subclass for documents that can be accessible'''
 
 
 class AvailableDocs(models.Model):
@@ -216,10 +270,13 @@ class AvailableDocs(models.Model):
 
 
 # there are 3 types of patrons: students, faculties and visiting professors
+'''The main successor of User with clue features for it'''
+
+
 class Patron(User):
 
-    #renew the document for n weeks
-    def renew(self, weeks, queue = Copy.renew):  # 13 requirement
+    # renew the document for n weeks
+    def renew(self, weeks, queue=Copy.renew):  # 13 requirement
         queue.add(self)
         queue.models.save
 
@@ -302,8 +359,14 @@ class Patron(User):
             return "VisitingProfessor"
 
 
+''' Student patron'''
+
+
 class Student(Patron):
     pass
+
+
+''' Faculty parton'''
 
 
 class Faculty(Patron):
@@ -314,20 +377,35 @@ class Faculty(Patron):
         new_fac.name = name
 
 
+''' Visiting professor patron'''
+
+
 class VisitingProfessor(Patron):
     pass
+
+
+''' Instructor patron'''
 
 
 class Instructor(Faculty):
     pass
 
 
+'''TA patron'''
+
+
 class TA(Faculty):
     pass
 
 
+'''Professor patron'''
+
+
 class Professor(Faculty):
     pass
+
+
+''' Class of the main request tp check out the book'''
 
 
 class CheckOutRequest(models.Model):
@@ -335,9 +413,15 @@ class CheckOutRequest(models.Model):
     copy = models.ForeignKey(Copy, on_delete=models.DO_NOTHING, related_name='check_out_request')
 
 
+''' Class for request at hand over cases'''
+
+
 class HandOverRequest(models.Model):
     user_card = models.ForeignKey(UserCard, on_delete=models.DO_NOTHING, related_name='hand_over_request')
     copy = models.ForeignKey(Copy, on_delete=models.DO_NOTHING, related_name='hand_over_request')
+
+
+''' The main moderator user - Librarian'''
 
 
 class Librarian(User):
@@ -345,9 +429,8 @@ class Librarian(User):
     def renew_request(self):
         for renew in Copy.objects.all():
             weeks = renew.weeks_renew
-            delta = datetime.timedelta(days=weeks//7)
+            delta = datetime.timedelta(days=weeks // 7)
             renew.overdue_date += delta
-
 
     def outstanding_request(self, request):
         request.copy.is_checked_out = True
@@ -358,8 +441,9 @@ class Librarian(User):
 
     def notify(self, user, document):
         user.available_documents.create(document=document, user=user)
-        send_mail(message='Dear user, you have 1 day to take a copy of document you queued up for. After the expiration of this period you will lose this opportunity and will be removed from the queue. Good luck. Your InnoLib',
-                  subject='Waiting notification', from_email=Library.mail, recipient_list=user.mail)
+        send_mail(
+            message='Dear user, you have 1 day to take a copy of document you queued up for. After the expiration of this period you will lose this opportunity and will be removed from the queue. Good luck. Your InnoLib',
+            subject='Waiting notification', from_email=Library.mail, recipient_list=user.mail)
 
     def accept_doc(self, request):
         request.copy.is_checked_out = False
@@ -414,8 +498,7 @@ class Librarian(User):
         for card in UserCard.objects:
             for copy in card.copies:
                 if copy.if_overdue():
-                    card.user.fine += copy.overdue*copy.document.price_value
-
+                    card.user.fine += copy.overdue * copy.document.price_value
 
     def create_book(self, library, is_best_seller, reference, title):
         class_model = ReferenceBook if reference else Book
