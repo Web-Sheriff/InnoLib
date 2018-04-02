@@ -154,8 +154,8 @@ class Copy(models.Model):
     need_to_return = models.BooleanField(default=False)
     booking_date = models.DateField(null=True)
     overdue_date = models.DateField(null=True)
-    renew = models.ForeignKey("Librarian")
-    weeks_renew = models.ForeignKey("Librarian")
+    renew = models.ForeignKey("Librarian",on_delete=models.DO_NOTHING, related_name='renew')
+    weeks_renew = models.ForeignKey("Librarian", on_delete=models.DO_NOTHING, related_name='weeks_renew')
 
     def check_out(self, user):
         if isinstance(self.document, ReferenceBook):
