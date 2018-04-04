@@ -75,11 +75,17 @@ class Document(models.Model):
     authors = models.ManyToManyField(Author, related_name='documents')
     price_value = models.IntegerField()
     keywords = models.ManyToManyField(Keyword, related_name='documents')
-    # studentsQueue = models.ManyToManyField("Student", related_name='documents')
-    # instructorsQueue = models.ManyToManyField("Instructor", related_name='documents')
-    # TAsQueue = models.ManyToManyField("TA", related_name='documents')
-    # visitingProfessorsQueue = models.ManyToManyField("VisitingProfessor", related_name='documents')
-    # professorsQueue = models.ManyToManyField("Professor", related_name='documents')
+
+    is_best_seller = models.BooleanField(default=False)
+    edition = models.CharField(max_length=128)
+    publisher = models.CharField(max_length=64)
+    year = models.IntegerField()
+
+    studentsQueue = models.ManyToManyField("Student", related_name='documents')
+    instructorsQueue = models.ManyToManyField("Instructor", related_name='documents')
+    TAsQueue = models.ManyToManyField("TA", related_name='documents')
+    visitingProfessorsQueue = models.ManyToManyField("VisitingProfessor", related_name='documents')
+    professorsQueue = models.ManyToManyField("Professor", related_name='documents')
 
     def booking_period(self, user):
         return datetime.timedelta(weeks=2)
@@ -115,12 +121,10 @@ class Document(models.Model):
 ''' Derivative from Document class with only book features'''
 
 
+# Document
+
 class Book(Document):
-    is_best_seller = models.BooleanField(default=False)
-    edition = models.CharField(max_length=128)
-    publisher = models.CharField(max_length=64)
-    year = models.IntegerField()
-    booking_period = datetime.timedelta(days=31)
+    # booking_period = datetime.timedelta(days=31)
 
     def booking_period(self, user):
         if self.is_best_seller:
@@ -310,7 +314,7 @@ class Patron(User):
         for copy in self.user_card.copies.all():
             if copy.document == document:
                 return False  # user has already checked this document
-        queue = Document.queue_type(doc=document, user=self)
+        queue = document.queue_type(doc=document, user=self)
         if document.studentsQueue.count() + document.TAsQueue.count() + document.instructorsQueue.count() + document.visitingProfessorsQueue.count() + document.professorsQueue.count() > 0:
             queue.add(self)
             queue.model.save()
@@ -340,6 +344,7 @@ class Patron(User):
                 # Librarian.handed_over_copies.add(copy)
                 return True
         return False  # no such document
+
 
     def has_overdue(self):  # bool
         for copy in self.user_card.copies.all():
@@ -567,122 +572,122 @@ class Librarian(User):
                                           library=library, booking_period = datetime.timedelta(days=31))
 
     # for tests
-    def create_library(self):
-        return Library.objects.create()
-
-    def create_p1(self, library):
-        user = Patron.objects.create(login='test', password='test', first_name='Sergey', second_name='Afonso',
-                                     address="Via Margutta, 3", phone_number='30001', fine=0)
-        UserCard.objects.create(user=user, library_card_number=1010, library=library)
-        return user
-
-    def create_p2(self, library):
-        user = Patron.objects.create(login='test', password='test', first_name='Nadia', second_name='Teixeira',
-                                      address="Via Sacra, 13", phone_number='30002',fine=0)
-        UserCard.objects.create(user=user, library_card_number=1011, library = library)
-        return user
-
-    def create_p3(self, library):
-        user = Patron.objects.create(login='test', password='test', first_name='Elvira', second_name='Espindola',
-                                      address="Via del Corso, 22", phone_number='30003',fine=0)
-        UserCard.objects.create(user=user, library_card_number=1100, library = library)
-        return user
-
-    def create_s(self, library):
-        user = Student.objects.create(login='test', password='test', first_name='Andrey', second_name='Velo',
-                                      address="Avenida Mazatlan 250", phone_number='30004', fine=0)
-        UserCard.objects.create(user=user, library_card_number=1101, library=library)
-        return user
-
-    def create_v(self,library):
-        user = Student.objects.create(login='test', password='test', first_name='Veronika', second_name='Rama',
-                                      address="Stret Atocha, 27", phone_number='30005',fine=0)
-        UserCard.objects.create(user=user, library_card_number=1110, library=library)
-        return user
-
-    def create_book(self, library, is_best_seller=False, reference=False, title='"Good_book"'):
-        class_model = ReferenceBook if reference else Book
-        return class_model.objects.create(library=library, title=title, price_value=0, is_best_seller=is_best_seller,
-                                          edition='0', publisher='test', year=2000, fine = 9)
-
-    def create_b1(self, library):
-        return Book.objects.create(library=library, title="Introduction to Algorithms", price_value=0,
-                                   is_best_seller=False,
-                                   edition="Third edition", publisher='MIT Press', year=2009, fine = 0)
-
-    def create_b2(self, library):
-        return Book.objects.create(library=library,
-                                   title="Design Patterns: Elements of Reusable Object-Oriented Software",
-                                   price_value=0, is_best_seller=True, edition="First edition",
-                                   publisher="Addison-Wesley Professional", year=2009, fine = 0)
-
-    def create_b3(self, library):
-        return ReferenceBook.objects.create(library=library, title="The Mythical Man-month", price_value=0,
-                                            is_best_seller=False, edition="Second edition",
-                                            publisher="Addison-Wesley Longman Publishing Co., Inc", year=1995, fine = 0)
-
-    def create_copy(self, document, number):
-        Copy.objects.create(document=document, number=number)
-
-    def create_author(self):
-        return Author.objects.create(name='Unnamed_author')
-
-    def create_av(self, library, title="Test"):
-        return AudioVideo.objects.create(library=library, title=title, price_value=0)
-
-    def create_av1(self, library):
-        return AudioVideo.objects.create(library=library, title="Null References: The Billion Dollar Mistake",
-                                         price_value=0)
-
-    def create_av2(self, library):
-        return AudioVideo.objects.create(library=library, title="Information Entropy", price_value=0)
-
-
-
-    def create_b1(self, library):
-        return Book.objects.create(library=library, title="Introduction to Algorithms", price_value=0,
-                                   is_best_seller=False,
-                                   edition="Third edition", publisher='MIT Press', year=2009)
-
-    def create_b2(self, library):
-        return Book.objects.create(library=library,
-                                   title="Design Patterns: Elements of Reusable Object-Oriented Software",
-                                   price_value=0, is_best_seller=True, edition="First edition",
-                                   publisher="Addison-Wesley Professional", year=2003)
-
-    def create_b3(self, library):
-        return ReferenceBook.objects.create(library=library, title="The Mythical Man-month", price_value=0,
-                                            is_best_seller=False, edition="Second edition",
-                                            publisher="Addison-Wesley Longman Publishing Co., Inc", year=1995)
-
-    ''' d1 '''
-
-    def create_d1(self, library):
-        return Book.objects.create(library=library, title="Introduction to Algorithms", price_value=0,
-                                   is_best_seller=False,
-                                   edition="Third edition", publisher='MIT Press', year=2009)
-
-    ''' d2 '''
-
-    def create_d2(self, library):
-        return Book.objects.create(library=library,
-                                   title="Design Patterns: Elements of Reusable Object-Oriented Software",
-                                   price_value=0, is_best_seller=True, edition="First edition",
-                                   publisher="Addison-Wesley Professional", year=2003)
-
-    ''' d3 '''
-
-    def create_d3(self, library):
-        return ReferenceBook.objects.create(library=library, title="The Mythical Man-month", price_value=0,
-                                            is_best_seller=False, edition="Second edition",
-                                            publisher="Addison-Wesley Longman Publishing Co., Inc", year=1995)
-
-    def create_av1(self, library):
-        return AudioVideo.objects.create(library=library, title="Null References: The Billion Dollar Mistake",
-                                         price_value=0)
-
-    def create_av2(self, library):
-        return AudioVideo.objects.create(library=library, title="Information Entropy", price_value=0)
+    # def create_library(self):
+    #     return Library.objects.create()
+    #
+    # def create_p1(self, library):
+    #     user = Patron.objects.create(login='test', password='test', first_name='Sergey', second_name='Afonso',
+    #                                  address="Via Margutta, 3", phone_number='30001', fine=0)
+    #     UserCard.objects.create(user=user, library_card_number=1010, library=library)
+    #     return user
+    #
+    # def create_p2(self, library):
+    #     user = Patron.objects.create(login='test', password='test', first_name='Nadia', second_name='Teixeira',
+    #                                   address="Via Sacra, 13", phone_number='30002',fine=0)
+    #     UserCard.objects.create(user=user, library_card_number=1011, library=library)
+    #     return user
+    #
+    # def create_p3(self, library):
+    #     user = Patron.objects.create(login='test', password='test', first_name='Elvira', second_name='Espindola',
+    #                                   address="Via del Corso, 22", phone_number='30003',fine=0)
+    #     UserCard.objects.create(user=user, library_card_number=1100, library = library)
+    #     return user
+    #
+    # def create_s(self, library):
+    #     user = Student.objects.create(login='test', password='test', first_name='Andrey', second_name='Velo',
+    #                                   address="Avenida Mazatlan 250", phone_number='30004', fine=0)
+    #     UserCard.objects.create(user=user, library_card_number=1101, library=library)
+    #     return user
+    #
+    # def create_v(self,library):
+    #     user = Student.objects.create(login='test', password='test', first_name='Veronika', second_name='Rama',
+    #                                   address="Stret Atocha, 27", phone_number='30005',fine=0)
+    #     UserCard.objects.create(user=user, library_card_number=1110, library=library)
+    #     return user
+    #
+    # def create_book(self, library, is_best_seller=False, reference=False, title='"Good_book"'):
+    #     class_model = ReferenceBook if reference else Book
+    #     return class_model.objects.create(library=library, title=title, price_value=0, is_best_seller=is_best_seller,
+    #                                       edition='0', publisher='test', year=2000, fine = 9)
+    #
+    # def create_b1(self, library):
+    #     return Book.objects.create(library=library, title="Introduction to Algorithms", price_value=0,
+    #                                is_best_seller=False,
+    #                                edition="Third edition", publisher='MIT Press', year=2009, fine = 0)
+    #
+    # def create_b2(self, library):
+    #     return Book.objects.create(library=library,
+    #                                title="Design Patterns: Elements of Reusable Object-Oriented Software",
+    #                                price_value=0, is_best_seller=True, edition="First edition",
+    #                                publisher="Addison-Wesley Professional", year=2009, fine = 0)
+    #
+    # def create_b3(self, library):
+    #     return ReferenceBook.objects.create(library=library, title="The Mythical Man-month", price_value=0,
+    #                                         is_best_seller=False, edition="Second edition",
+    #                                         publisher="Addison-Wesley Longman Publishing Co., Inc", year=1995, fine = 0)
+    #
+    # def create_copy(self, document, number):
+    #     Copy.objects.create(document=document, number=number)
+    #
+    # def create_author(self):
+    #     return Author.objects.create(name='Unnamed_author')
+    #
+    # def create_av(self, library, title="Test"):
+    #     return AudioVideo.objects.create(library=library, title=title, price_value=0)
+    #
+    # def create_av1(self, library):
+    #     return AudioVideo.objects.create(library=library, title="Null References: The Billion Dollar Mistake",
+    #                                      price_value=0)
+    #
+    # def create_av2(self, library):
+    #     return AudioVideo.objects.create(library=library, title="Information Entropy", price_value=0)
+    #
+    #
+    #
+    # def create_b1(self, library):
+    #     return Book.objects.create(library=library, title="Introduction to Algorithms", price_value=0,
+    #                                is_best_seller=False,
+    #                                edition="Third edition", publisher='MIT Press', year=2009)
+    #
+    # def create_b2(self, library):
+    #     return Book.objects.create(library=library,
+    #                                title="Design Patterns: Elements of Reusable Object-Oriented Software",
+    #                                price_value=0, is_best_seller=True, edition="First edition",
+    #                                publisher="Addison-Wesley Professional", year=2003)
+    #
+    # def create_b3(self, library):
+    #     return ReferenceBook.objects.create(library=library, title="The Mythical Man-month", price_value=0,
+    #                                         is_best_seller=False, edition="Second edition",
+    #                                         publisher="Addison-Wesley Longman Publishing Co., Inc", year=1995)
+    #
+    # ''' d1 '''
+    #
+    # def create_d1(self, library):
+    #     return Book.objects.create(library=library, title="Introduction to Algorithms", price_value=0,
+    #                                is_best_seller=False,
+    #                                edition="Third edition", publisher='MIT Press', year=2009)
+    #
+    # ''' d2 '''
+    #
+    # def create_d2(self, library):
+    #     return Book.objects.create(library=library,
+    #                                title="Design Patterns: Elements of Reusable Object-Oriented Software",
+    #                                price_value=0, is_best_seller=True, edition="First edition",
+    #                                publisher="Addison-Wesley Professional", year=2003)
+    #
+    # ''' d3 '''
+    #
+    # def create_d3(self, library):
+    #     return ReferenceBook.objects.create(library=library, title="The Mythical Man-month", price_value=0,
+    #                                         is_best_seller=False, edition="Second edition",
+    #                                         publisher="Addison-Wesley Longman Publishing Co., Inc", year=1995)
+    #
+    # def create_av1(self, library):
+    #     return AudioVideo.objects.create(library=library, title="Null References: The Billion Dollar Mistake",
+    #                                      price_value=0)
+    #
+    # def create_av2(self, library):
+    #     return AudioVideo.objects.create(library=library, title="Information Entropy", price_value=0)
 
     def user_card(self, login, password, first_name, second_name, address, phone_number, fac_or_stu):
         new_user = User()
