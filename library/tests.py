@@ -9,7 +9,8 @@ def create_library():
 
 
 def create_user(class_model, library, num):
-    user = class_model.objects.create(login='test', password='test', first_name='test', second_name='test',address='test', phone_number='test')
+    user = class_model.objects.create(login='test', password='test', first_name='test', second_name='test',
+                                      address='test', phone_number='test', fine=0)
     UserCard.objects.create(user=user, library_card_number=num, library=library)
     return user
 
@@ -23,51 +24,51 @@ def create_book(library, is_best_seller=False, reference=False, title='"Good_boo
 ''' p1 '''
 
 
-def create_p1(library):
-    user = Faculty.objects.create(login='test', password='test', first_name='Sergey', second_name='Afonso',
-                                  address="Via Margutta, 3", phone_number='30001')
-    UserCard.objects.create(user=user, library_card_number=1010, library=library)
-    return user
-
-
-''' p2 '''
-
-
-def create_p2(library):
-    user = Student.objects.create(login='test', password='test', first_name='Nadia', second_name='Teixeira',
-                                  address="Via Sacra, 13", phone_number='30002')
-    UserCard.objects.create(user=user, library_card_number=1011, library=library)
-    return user
-
-
-''' p3 '''
-
-
-def create_p3(library):
-    user = Student.objects.create(login='test', password='test', first_name='Elvira', second_name='Espindola',
-                                  address="Via del Corso, 22", phone_number='30003')
-    UserCard.objects.create(user=user, library_card_number=1100, library=library)
-    return user
-
-
-''' s '''
-
-
-def create_s(library):
-    user = Student.objects.create(login='test', password='test', first_name='Andrey', second_name='Velo',
-                                  address="Avenida Mazatlan 250", phone_number='30004')
-    UserCard.objects.create(user=user, library_card_number=1101, library=library)
-    return user
-
-
-''' v '''
-
-
-def create_v(library):
-    user = Student.objects.create(login='test', password='test', first_name='Veronika', second_name='Rama',
-                                  address="Stret Atocha, 27", phone_number='30005')
-    UserCard.objects.create(user=user, library_card_number=1110, library=library)
-    return user
+# def create_p1(library):
+#     user = Faculty.objects.create(login='test', password='test', first_name='Sergey', second_name='Afonso',
+#                                   address="Via Margutta, 3", phone_number='30001')
+#     UserCard.objects.create(user=user, library_card_number=1010, library=library)
+#     return user
+#
+#
+# ''' p2 '''
+#
+#
+# def create_p2(library):
+#     user = Student.objects.create(login='test', password='test', first_name='Nadia', second_name='Teixeira',
+#                                   address="Via Sacra, 13", phone_number='30002')
+#     UserCard.objects.create(user=user, library_card_number=1011, library=library)
+#     return user
+#
+#
+# ''' p3 '''
+#
+#
+# def create_p3(library):
+#     user = Student.objects.create(login='test', password='test', first_name='Elvira', second_name='Espindola',
+#                                   address="Via del Corso, 22", phone_number='30003')
+#     UserCard.objects.create(user=user, library_card_number=1100, library=library)
+#     return user
+#
+#
+# ''' s '''
+#
+#
+# def create_s(library):
+#     user = Student.objects.create(login='test', password='test', first_name='Andrey', second_name='Velo',
+#                                   address="Avenida Mazatlan 250", phone_number='30004')
+#     UserCard.objects.create(user=user, library_card_number=1101, library=library)
+#     return user
+#
+#
+# ''' v '''
+#
+#
+# def create_v(library):
+#     user = Student.objects.create(login='test', password='test', first_name='Veronika', second_name='Rama',
+#                                   address="Stret Atocha, 27", phone_number='30005')
+#     UserCard.objects.create(user=user, library_card_number=1110, library=library)
+#     return user
 
 
 ''' d1 '''
@@ -75,7 +76,7 @@ def create_v(library):
 
 def create_d1(library):
     return Book.objects.create(library=library, title="Introduction to Algorithms", price_value=0, is_best_seller=False,
-                               edition="Third edition", publisher='MIT Press', year=2009)
+                               edition="Third edition", publisher='MIT Press', year=2009, booking_period = datetime.timedelta(days=31))
 
 
 ''' d2 '''
@@ -84,7 +85,7 @@ def create_d1(library):
 def create_d2(library):
     return Book.objects.create(library=library, title="Design Patterns: Elements of Reusable Object-Oriented Software",
                                price_value=0, is_best_seller=True, edition="First edition",
-                               publisher="Addison-Wesley Professional", year=2003)
+                               publisher="Addison-Wesley Professional", year=2003, booking_period = datetime.timedelta(days=31) )
 
 
 ''' d3 '''
@@ -93,7 +94,7 @@ def create_d2(library):
 def create_d3(library):
     return ReferenceBook.objects.create(library=library, title="The Mythical Man-month", price_value=0,
                                         is_best_seller=False, edition="Second edition",
-                                        publisher="Addison-Wesley Longman Publishing Co., Inc", year=1995)
+                                        publisher="Addison-Wesley Longman Publishing Co., Inc", year=1995, booking_period = datetime.timedelta(days=31))
 
 
 def create_copy(document, number):
@@ -115,11 +116,10 @@ class TestCaseSettings:
 
         d1 = librarian.create_d1(library)
         librarian.create_copy(d1, 3)
-        d2 = librarian.create_b2(library)
+        d2 = librarian.create_d2(library)
         librarian.create_copy(d2, 3)
-        d3 = librarian.create_b3(library)
+        d3 = librarian.create_d3(library)
         librarian.create_copy(d3, 2)
-
 
         p1 = librarian.create_p1(library)
         p2 = librarian.create_p2(library)
@@ -145,7 +145,12 @@ class FirstTestCase(TestCase):
         librarian = Librarian.objects.get(id=1)
         d1 = Book.objects.get(id=1)
         d2 = Book.objects.get(id=2)
-        p1 = Patron.objects.get(id=1)
+        try:
+            h = librarian.create_p1(d1.library)
+            p1 = Patron.objects.get(id=1)
+        except ObjectDoesNotExist:
+            print("p1 is not a patron of the library hence he cannot check out any document.")
+            return
 
         p1.check_out_doc(d1)
         p1.check_out_doc(d2)
@@ -166,7 +171,7 @@ class FirstTestCase(TestCase):
 
         TestCaseSettings.bdclear(self)
 
-
+'''
 class SecondTestCase(TestCase):
     def setUp(self):
         TestCaseSettings.first(self)
@@ -472,8 +477,7 @@ class TenthTestCase(TestCase):
         print("v: " + d1.title + " by " + str(date_d1_v + v_booking_period))
         TestCaseSettings.bdclear(self)
         TestCaseSettings.bdclear(self)
-
-
+'''
 
 
 '''
