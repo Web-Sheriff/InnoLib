@@ -16,7 +16,7 @@
     <!--{% block content %}-->
         <form method="LOGOUT" class="logout" style=" position: fixed ; top: 20px; right: 25px; float: right"; top: 20px; left: 1800px;" ;>{% csrf_token %}
             <!--{{ form.as_p }}-->
-            <button type="submit" class="save btn btn-default" style="background: orange;">Log in</button>
+            <button type="submit" class="save btn btn-default" onclick="window.location.href='http://127.0.0.1:8000/login.html'" style="background: orange;">Log in</button>
         </form>
     <!--{% endblock %}-->
 
