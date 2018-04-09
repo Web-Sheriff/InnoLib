@@ -17,15 +17,16 @@ class SignUpForm(forms.ModelForm):
         exclude = [""]
 
 
-#class UserForm(forms.ModelForm):
-#    class Meta:
- #       model = User
-  #      fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number')
-   #     exclude = [""]
+class UserForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number')
+        exclude = [""]
 
 
-#class BookForm(forms.ModelForm):
- #   class Meta:
-  #      model = Book
-   #     fields = ('library','title', 'price_value', 'is_best_seller', 'edition', 'publisher', 'publish_time')
-    #    exclude = [""]
+class BookForm(forms.ModelForm):
+    class Meta:
+        model = Book
+        # , 'publish_time'
+        fields = ('library','title', 'price_value', 'is_best_seller', 'edition', 'publisher')
+        exclude = [""]
