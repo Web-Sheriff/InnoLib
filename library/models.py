@@ -121,16 +121,14 @@ class Document(models.Model):
 # Document
 
 class Book(Document):
-    # booking_period = datetime.timedelta(days=31)
-
     def booking_period(self, user):
         if self.is_best_seller:
             return datetime.timedelta(days=14)
         if isinstance(user, Faculty):
-            return datetime.timedelta(days = 28)
+            return datetime.timedelta(days=28)
         if isinstance(user, VisitingProfessor):
-            return datetime.timedelta(days = 7)
-        return datetime.timedelta(days = 21)
+            return datetime.timedelta(days=7)
+        return datetime.timedelta(days=21)
 
 
 ''' Derivative from Document class with only book features'''
@@ -218,10 +216,10 @@ class Copy(models.Model):
         return True
 
     def if_overdue(self):
-        return datetime.now() > self.overdue_date
+        return now() > self.overdue_date
 
     def overdue(self):
-        return datetime.now() - self.overdue_date
+        return now() - self.overdue_date
 
 
 # All the classes below are about users
@@ -337,12 +335,11 @@ class Patron(User):
         for copy in self.user_card.copies.all():
             if copy.document == document:
                 HandOverRequest.objects.create(user_card=self.user_card, copy=copy)
-                # self.user_card.copies.exclude(copy)
-                # self.user_card.save()
+                self.user_card.copies.exclude(copy)
+                self.user_card.save()
                 # Librarian.handed_over_copies.add(copy)
                 return True
         return False  # no such document
-
 
     def has_overdue(self):  # bool
         for copy in self.user_card.copies.all():
@@ -444,7 +441,7 @@ class Librarian(User):
         request.copy.save()
 
     def notify(self, user, document):
-        # user.available_documents.create(document=document, user=user)
+        user.available_documents.create(document=document, user=user)
         send_mail(
             message='Dear user, you have 1 day to take a copy of document you queued up for. After the expiration of this period you will lose this opportunity and will be removed from the queue. Good luck. Your InnoLib',
             subject='Waiting notification', from_email=Library.mail, recipient_list=user.mail)
@@ -500,7 +497,7 @@ class Librarian(User):
         pass
 
     def check_overdue_copies(self):
-        for card in UserCard.objects:
+        for card in UserCard.objects.all():
             for copy in card.copies:
                 if copy.if_overdue():
                     card.user.fine += copy.overdue * copy.document.price_value
@@ -606,7 +603,7 @@ class Librarian(User):
     def create_book(self, library, is_best_seller=False, reference=False, title='"Good_book"'):
         class_model = ReferenceBook if reference else Book
         return class_model.objects.create(library=library, title=title, price_value=0, is_best_seller=is_best_seller,
-                                          edition='0', publisher='test', year=2000, fine = 9)
+                                          edition='0', publisher='test', year=2000, fine=9)
 
     def create_b1(self, library):
         return Book.objects.create(library=library, title="Introduction to Algorithms", price_value=0,
