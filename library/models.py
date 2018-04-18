@@ -236,7 +236,7 @@ class User(models.Model):
     second_name = models.CharField(max_length=64)
     address = models.CharField(max_length=256)
     phone_number = models.CharField(max_length=16)
-    fine = models.IntegerField()
+    fine = models.IntegerField(default=None, null=True)
 
 
 ''' UserCard class as contact information which librarian deals with'''
