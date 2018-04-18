@@ -1,5 +1,4 @@
 from django import forms
-
 from .models import Login, User, Book
 
 
@@ -27,6 +26,13 @@ class UserForm(forms.ModelForm):
 class BookForm(forms.ModelForm):
     class Meta:
         model = Book
-        # , 'publish_time'
+        fields = ('library','title', 'price_value', 'is_best_seller', 'edition', 'publisher',)
+        exclude = [""]
+
+
+class CopyForm(forms.ModelForm):
+    class Meta:
+        model = Book
         fields = ('library','title', 'price_value', 'is_best_seller', 'edition', 'publisher')
         exclude = [""]
+

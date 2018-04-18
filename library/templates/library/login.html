@@ -10,7 +10,7 @@
     <!-- For working with form -->
         {% block content %}
         <h1 style="position: fixed; top: 130px; left: 625px;); ">Login</h1>
-            <form method="LOGIN" class="login" style="position: fixed; top: 200px; left: 550px; border: #FCA205 5px solid " ;>{% csrf_token %}
+            <form method="POST" class="login" style="position: fixed; top: 200px; left: 550px; border: #FCA205 5px solid " ;>{% csrf_token %}
             {{ form.as_p }}
 		
 		<button type="submit" class="save btn btn-default" style="margin-top: 5px; background: yellow">Log in</button>
