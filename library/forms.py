@@ -12,14 +12,14 @@ class LoginForm(forms.ModelForm):
 class SignUpForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number')
+        fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail')
         exclude = [""]
 
 
 class UserForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number')
+        fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail')
         exclude = [""]
 
 

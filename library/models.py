@@ -560,11 +560,17 @@ class Librarian(User):
         pass
 
     def create_user(self, class_model, library, num):
-        return class_model.objects.create(login='test',
+        user = class_model.objects.create(login='test',
                                           password='test', first_name='test',
                                           second_name='test', address='test',
-                                          phone_number='test', library_card_number=num,
-                                          library=library, booking_period = datetime.timedelta(days=31))
+                                          phone_number='test', mail='test@gmail.com')
+        UserCard.objects.create(user=user, library_card_number=num, library=library)
+        return user
+
+    def remove(self, class_model, obj):
+        class_model.objects.exclude(id=obj.id)
+        class_model.save(self)
+
 
     # for tests
     def create_library(self):

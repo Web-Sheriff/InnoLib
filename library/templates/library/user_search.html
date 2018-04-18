@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+    <head>
+        <meta charset="UTF-8">
+        <title>Books</title>
+    </head>
+    <body>
+    <!--{% block content %}-->
+        <form method="LOGOUT" class="logout" style=" position: fixed ; top: 20px; right: 25px; float: right"; top: 20px; left: 1800px;" ;>{% csrf_token %}
+            <!--{{ form.as_p }}-->
+            <button type="submit" class="save btn btn-default" onclick="window.location.href='http://127.0.0.1:8000/login.html'" style="background: orange;">Log in</button>
+        </form>
+    <!--{% endblock %}-->
+
+
+
+        <div>
+            <h1 style="padding-left: 200px">
+                <input type="search" placeholder="Search books on site" size="150">
+                <button type="submit" value="Search"> Search </button>
+            </h1>
+        </div>
+    </body>

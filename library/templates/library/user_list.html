@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{{ user_list.as_p }}
+print ('we did it')
+{% for i in user_list %}
+
+                  <tr class='success'>
+                        <td>{{ i.username }}</td>
+                        <td>{{ i.mail }}</td>
+                        <td>{{ i.user_card.copies.get.document.title}}</td>
+                  </tr>
+{% endfor %}
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>login</title>
+    </head>
+
+    <body>
+
+    <!-- For working with form -->
+        {% block content %}
+        <h1 style="position: fixed; top: 130px; left: 625px;); ">Adding a patron</h1>
+            <form method="USER" class="librarian_add_user" style="position: fixed; top: 200px; left: 550px; border: #FCA205 5px solid " ;>{% csrf_token %}
+            {{ form.as_p}}
+
+		<button type="submit" class="save btn btn-default" style="margin-top: 5px; background: yellow">Add</button>
+                <input type="checkbox" name="option1" value="a1">Student<Br>
+                <input type="checkbox" name="option2" value="a2">TA<Br>
+                <input type="checkbox" name="option3" value="a3">Professor<Br>
+                <input type="checkbox" name="option4" value="a4">VisitingProfessor<Br>
+                <input type="checkbox" name="option5" value="a5">Instructor<Br>
+                <button type="button" onclick="window.location.href='users/templates/library/librarian_add_user.html'" style="margin-left: 15px; background: green; color:ghostwhite;"> Add a user </button>
+
+
+            </form>
+        {% endblock %}
+
+    </body>
+</html>

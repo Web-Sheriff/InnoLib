@@ -7,8 +7,10 @@ from django.views.generic import TemplateView
 # Create your views here.
 from django.views import generic
 
+
 class UserListView(generic.ListView):
     model = User
+
 
 def library(request):
     if request.method == "POST":
