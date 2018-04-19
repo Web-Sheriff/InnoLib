@@ -76,11 +76,6 @@ class Document(models.Model):
     price_value = models.IntegerField()
     keywords = models.ManyToManyField(Keyword, related_name='documents')
 
-    is_best_seller = models.BooleanField(default=False)
-    edition = models.CharField(max_length=128)
-    publisher = models.CharField(max_length=64)
-    year = models.IntegerField()
-
     studentsQueue = models.ManyToManyField("Student", related_name='documents')
     instructorsQueue = models.ManyToManyField("Instructor", related_name='documents')
     TAsQueue = models.ManyToManyField("TA", related_name='documents')
@@ -111,8 +106,16 @@ class Document(models.Model):
             return doc.TAsQueue.first()
         elif doc.visitingProfessorsQueue.count() > 0:
             return doc.visitingProfessorsQueue.first()
-        else:
+        elif doc.professorsQueue.count() > 0:
             return doc.professorsQueue.first()
+        else:
+            return False
+
+    def has_queue(self):
+        if self.studentsQueue.count() + self.instructorsQueue.count() + self.TAsQueue.count() + self.professorsQueue.count() + self.visitingProfessorsQueue.count() > 0:
+            return False
+        else:
+            return True
 
 
 ''' Derivative from Document class with only book features'''
@@ -121,13 +124,18 @@ class Document(models.Model):
 # Document
 
 class Book(Document):
+    is_best_seller = models.BooleanField(default=False)
+    edition = models.CharField(max_length=128)
+    publisher = models.CharField(max_length=64)
+    year = models.IntegerField()
+
     def booking_period(self, user):
-        if self.is_best_seller:
-            return datetime.timedelta(days=14)
         if isinstance(user, Faculty):
             return datetime.timedelta(days=28)
         if isinstance(user, VisitingProfessor):
             return datetime.timedelta(days=7)
+        if self.is_best_seller:
+            return datetime.timedelta(days=14)
         return datetime.timedelta(days=21)
 
 
@@ -143,6 +151,8 @@ class ReferenceBook(Book):
 
 
 class AudioVideo(Document):
+    publisher = models.CharField(max_length=64)
+    year = models.IntegerField()
 
     def booking_period(self, user):
         if isinstance(user, VisitingProfessor):
@@ -233,7 +243,7 @@ class User(models.Model):
     password = models.CharField(max_length=64)
     mail = models.EmailField(max_length=64)
     first_name = models.CharField(max_length=64)
-    second_name = models.CharField(max_length=64)
+    surname = models.CharField(max_length=64)
     address = models.CharField(max_length=256)
     phone_number = models.CharField(max_length=16)
     fine = models.IntegerField(default=None, null=True)
@@ -259,11 +269,13 @@ class AvailableDocs(models.Model):
 
     def check_date(self):
         if self.rights_date != datetime.date.today():
-            queue = Document.queue_type(doc=self.document, user=self.user)
+            queue = self.document.queue_type(doc=self.document, user=self.user)
             queue.exclude(user_card=self.user.user_card)
             queue.model.save()
             self.user.available_documents.exclude(document=self.document, user=self.user)
             self.user.available_documents.model.save()
+            if not self.document.has_queue():
+                return False
             first = Document.first_in_queue(doc=self.document)
             first.available_documents.create(document=self.document, user=first)
             Librarian.notify(user=first, document=self.document)
@@ -311,7 +323,7 @@ class Patron(User):
             if copy.document == document:
                 return False  # user has already checked this document
         queue = document.queue_type(doc=document, user=self)
-        if document.studentsQueue.count() + document.TAsQueue.count() + document.instructorsQueue.count() + document.visitingProfessorsQueue.count() + document.professorsQueue.count() > 0:
+        if document.has_queue():
             queue.add(self)
             queue.model.save()
         for copy in document.copies.all():
@@ -357,7 +369,7 @@ class Patron(User):
         if isinstance(self, Professor):
             return "Professor"
         if isinstance(self, VisitingProfessor):
-            return "VisitingProfessor"
+            return "Visiting Professor"
 
 
 ''' Student patron'''
@@ -371,11 +383,7 @@ class Student(Patron):
 
 
 class Faculty(Patron):
-    def faculty_card(self, login, password, name):
-        new_fac = Faculty()
-        new_fac.login = login
-        new_fac.password = password
-        new_fac.name = name
+    pass
 
 
 ''' Visiting professor patron'''
@@ -562,7 +570,7 @@ class Librarian(User):
     def create_user(self, class_model, library, num):
         user = class_model.objects.create(login='test',
                                           password='test', first_name='test',
-                                          second_name='test', address='test',
+                                          surname='test', address='test',
                                           phone_number='test', mail='test@gmail.com')
         UserCard.objects.create(user=user, library_card_number=num, library=library)
         return user
@@ -690,7 +698,7 @@ class Librarian(User):
         new_user.login = login
         new_user.password = password
         new_user.first_name = first_name
-        new_user.second_name = second_name
+        new_user.surname = second_name
         new_user.address = address
         new_user.phone_number = phone_number
         new_user.fac_or_stu = fac_or_stu
