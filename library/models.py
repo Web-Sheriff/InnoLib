@@ -243,7 +243,7 @@ class User(models.Model):
     password = models.CharField(max_length=64)
     mail = models.EmailField(max_length=64)
     first_name = models.CharField(max_length=64)
-    surname = models.CharField(max_length=64)
+    second_name = models.CharField(max_length=64)
     address = models.CharField(max_length=256)
     phone_number = models.CharField(max_length=16)
     fine = models.IntegerField(default=None, null=True)
@@ -570,7 +570,7 @@ class Librarian(User):
     def create_user(self, class_model, library, num):
         user = class_model.objects.create(login='test',
                                           password='test', first_name='test',
-                                          surname='test', address='test',
+                                          second_name='test', address='test',
                                           phone_number='test', mail='test@gmail.com')
         UserCard.objects.create(user=user, library_card_number=num, library=library)
         return user
@@ -698,7 +698,7 @@ class Librarian(User):
         new_user.login = login
         new_user.password = password
         new_user.first_name = first_name
-        new_user.surname = second_name
+        new_user.second_name = second_name
         new_user.address = address
         new_user.phone_number = phone_number
         new_user.fac_or_stu = fac_or_stu
