@@ -1,4 +1,3 @@
-from django.core.exceptions import ObjectDoesNotExist
 from django.test import TestCase
 
 from library.models import *
@@ -37,11 +36,11 @@ class TestCaseSettings:
     pass
 
 
-class TestCase(TestCase):
+class FirstTestCase(TestCase):
     library = Library.objects.create()
     librarian = Librarian.objects.create(login='librarian', password='12345', mail='test@gmail.com', first_name='Librarian', second_name='Librairain', address='Inno', phone_number='1235435')
-    user = librarian.create_user(class_model=Student, library=library, num=10)
-    bORUTO = Book.objects.create(library=library, title='NARUTO', price_value='50', is_best_seller=False, edition='4th', publisher='ddd', year='1999')
-    c = Copy.objects.create(document=bORUTO, number=2)
-    user.user_card.copies.add(c)
-    librarian.remove(User, user)
+    # librarian.send_email(to=['v.vasilev@innopolis.ru', 'n.tupikina@innopolis.ru', 'a.gruk@innopolis.ru'], subject='Test', message='It works!!1!!11!')
+    s1 = librarian.create_user(class_model=Student, library=library, num=10)
+    b1 = Book.objects.create(library=library, title='NARUTO', price_value='50', is_best_seller=False, edition='4th', publisher='ddd', year='1999')
+    c1 = Copy.objects.create(document=b1, number=2)
+

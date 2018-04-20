@@ -12,7 +12,8 @@ Class that generates LMS
 
 
 class Library(models.Model):
-    mail = models.EmailField(default='test@gmail.com', max_length=64)
+    mail = models.EmailField(default='InnoLib@yandex.ru', max_length=63)
+    password = models.CharField(default='InnoTest', max_length=31)
 
     def count_unchecked_copies(self, doc):
         return len(doc.copies.filter(is_checked_out=False))
@@ -434,6 +435,11 @@ class HandOverRequest(models.Model):
 
 
 class Librarian(User):
+
+    def send_email(self, to, subject, message):
+        library = Library.objects.first()
+        send_mail(auth_user=library.mail, auth_password=library.password, from_email=library.mail,
+                  subject=subject, message=message, recipient_list=to)
 
     def renew_request(self):
         for renew in Copy.objects.all():
