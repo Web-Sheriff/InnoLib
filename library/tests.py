@@ -26,4 +26,3 @@ class FirstTestCase(TestCase):
     s1 = librarian.create_user(class_model=Student, login='slavav99', password='653e65hd', first_name='Vyacheslav', second_name='Vasilev', address='Inno', phone_number='+79503201013', mail='slavav99@yandex.ru')
     b1 = Book.objects.create(library=library, title='NARUTO', price_value='50', is_best_seller=False, edition='4th', publisher='ddd', year='1999')
     c1 = Copy.objects.create(document=b1, number=2)
-

@@ -291,7 +291,7 @@ class Patron(User):
     # renew the document for n weeks
     def renew(self, queue=Copy.renew):  # 13 requirement
         # queue.add(self)
-        # queue.models.save
+        # queue.model.save()
         pass
 
     # search for the documents using string
@@ -499,12 +499,9 @@ class Librarian(User):
             if copy.document == doc:
                 print(user.first_name + " " + user.second_name + ": " + doc.title + ": " + copy.number)
 
-    # def unchecked_copies(self, doc):
-    #     print("there are " + self.user_card.library.count_unchecked_copies(
-    #         doc) + "unchecked copies of document " + doc.title + "in library.")
-
-    def manage_patron(self):
-        pass
+    def unchecked_copies(self, doc):
+        print("there are " + str(self.user_card.library.count_unchecked_copies(
+            doc)) + "unchecked copies of document " + doc.title + "in library.")
 
     def check_overdue_copies(self):
         for card in UserCard.objects.all():
@@ -602,3 +599,11 @@ class Admin(User):
         UserCard.objects.create(user=librarian, library=self.user_card.library,
                                 library_card_number=library_card_number)
         return librarian
+
+    def change_level_of_privileges(self, librarian, level_of_privileges):
+        librarian.level_of_privileges = level_of_privileges
+
+    def delete_librarian(self, librarian):
+        Librarian.objects.get(id=librarian.id).delete()
+        Librarian.save()
+
