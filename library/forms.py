@@ -3,6 +3,8 @@ from .models import Login, User, Book
 
 
 class LoginForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput)
+
     class Meta:
         model = Login  # or User
         fields = ('username', 'password')
@@ -10,6 +12,7 @@ class LoginForm(forms.ModelForm):
 
 
 class SignUpForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput)
     class Meta:
         model = User
         fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail')
