@@ -14,6 +14,7 @@ Class that generates LMS
 class Library(models.Model):
     mail = models.EmailField(default='InnoLib@yandex.ru', max_length=63)
     password = models.CharField(default='InnoTest', max_length=31)
+    user_cards = models.ForeignKey('UserCard', default=None, on_delete=models.DO_NOTHING, related_name='library')
 
     def count_unchecked_copies(self, doc):
         return len(doc.copies.filter(is_checked_out=False))
@@ -211,8 +212,8 @@ class Copy(models.Model):
     need_to_return = models.BooleanField(default=False)
     booking_date = models.DateField(null=True)
     overdue_date = models.DateField(null=True)
-    renew = models.ForeignKey("Librarian", on_delete=models.DO_NOTHING, related_name='renew', null = True)
-    weeks_renew = models.ForeignKey("Librarian", on_delete=models.DO_NOTHING, related_name='weeks_renew', null = True)
+    renew = models.ForeignKey("Librarian", on_delete=models.DO_NOTHING, related_name='renew', null=True)
+    weeks_renew = models.ForeignKey("Librarian", on_delete=models.DO_NOTHING, related_name='weeks_renew', null=True)
 
     def check_out(self, user):
         if isinstance(self.document, ReferenceBook):
@@ -256,11 +257,10 @@ class User(models.Model):
 class UserCard(models.Model):
     user = models.OneToOneField(User, on_delete=models.DO_NOTHING, related_name='user_card')
     library_card_number = models.IntegerField()
-    library = models.ForeignKey(Library, on_delete=models.DO_NOTHING, related_name='user_cards')
-    copies = models.ManyToManyField(Copy)
+    copies = models.ForeignKey(Copy, default=None, on_delete=models.DO_NOTHING, related_name='user_card')
 
 
-''' Specail subclass for documents that can be accessible'''
+''' Special subclass for documents that can be accessible'''
 
 
 class AvailableDocs(models.Model):
@@ -320,42 +320,28 @@ class Patron(User):
 
     # check out some copy of the document. If it is not possible returns False
     def check_out_doc(self, document):
-        for copy in self.user_card.copies.all():
+        for copy in self.user_card.copies.objects.all():
             if copy.document == document:
                 return False  # user has already checked this document
         queue = document.queue_type(doc=document, user=self)
-        if document.has_queue():
-            queue.add(self)
-            queue.model.save()
-        for copy in document.copies.all():
-            if not copy.is_checked_out:
-                for doc in self.available_documents.objects.all():
-                    if document.id == doc.id:
-                        copy.is_checked_out = True
-                        self.user_card.copies.add(copy)
-                        copy.booking_date = datetime.date.today()
-                        queue.exclude(user_card=self.user_card)
-                        queue.model.save()
-                        self.user_card.save()
-                        copy.save()
-                        return True
-                CheckOutRequest.objects.create(user_card=self.user_card, copy=copy)
-                return True
-        return False  # there are no available copies
+        queue.add(self)
+        queue.model.save()
+        return True  # user got into queue
 
+    # we cannot return_doc feature because user cannot return it by himself. this action should do the librarian
     # return copy of the document to the library. If it is not possible returns False
-    def return_doc(self, document):
-        for copy in self.user_card.copies.all():
-            if copy.document == document:
-                HandOverRequest.objects.create(user_card=self.user_card, copy=copy)
-                self.user_card.copies.exclude(copy)
-                self.user_card.save()
-                # Librarian.handed_over_copies.add(copy)
-                return True
-        return False  # no such document
+    # def return_doc(self, document):
+    #     for copy in self.user_card.copies.all():
+    #         if copy.document == document:
+    #             HandOverRequest.objects.create(user_card=self.user_card, copy=copy)
+    #             self.user_card.copies.exclude(copy)
+    #             self.user_card.save()
+    #             # Librarian.handed_over_copies.add(copy)
+    #             return True
+    #     return False  # no such document
 
     def has_overdue(self):  # bool
-        for copy in self.user_card.copies.all():
+        for copy in self.user_card.copies.objects.all():
             if copy.overdue_date > datetime.date:
                 return True
         return False
@@ -415,28 +401,27 @@ class Professor(Faculty):
     pass
 
 
-''' Class of the main request tp check out the book'''
-
-
-class CheckOutRequest(models.Model):
-    user_card = models.ForeignKey(UserCard, on_delete=models.DO_NOTHING, related_name='check_out_request')
-    copy = models.ForeignKey(Copy, on_delete=models.DO_NOTHING, related_name='check_out_request')
-
-
-''' Class for request at hand over cases'''
-
-
-class HandOverRequest(models.Model):
-    user_card = models.ForeignKey(UserCard, on_delete=models.DO_NOTHING, related_name='hand_over_request')
-    copy = models.ForeignKey(Copy, on_delete=models.DO_NOTHING, related_name='hand_over_request')
-
-
 ''' The main moderator user - Librarian'''
 
 
 class Librarian(User):
 
     level_of_privileges = models.IntegerField(default=1)
+
+    def handle_book(self, user, copy):
+        queue = copy.document.queue_type(doc=copy.document, user=user)
+        if user.id == queue.first().id:
+            copy.is_checked_out = True
+            user.user_card.copies.add(copy)
+            copy.booking_date = datetime.date.today()
+            queue.exclude(user_card=user.user_card)
+            queue.model.save()
+            self.user_card.save()
+            copy.save()
+            return True
+        else:
+            print("This user is not first in queue")
+            return False
 
     def send_email(self, to, subject, message):
         library = Library.objects.first()
@@ -449,34 +434,61 @@ class Librarian(User):
             delta = datetime.timedelta(days=weeks // 7)
             renew.overdue_date += delta
 
-    def outstanding_request(self, request):
-        request.copy.is_checked_out = True
-        request.user_card.copies.add(request.copy)
-        request.copy.booking_date = datetime.date.today()
-        request.user_card.save()
-        request.copy.save()
+    def outstanding_request(self, doc):
+        if self.level_of_privileges >= 2:
+            self.remove_all_copies(doc)
+
+            message = 'Dear user, sorry but you have been removed from the queue on document "' + doc.title + '" due to outstanding request'
+            removed_users_mails = []
+            for user in doc.studentsQueue:
+                removed_users_mails.append(user.mail)
+            for user in doc.instructorsQueue:
+                removed_users_mails.append(user.mail)
+            for user in doc.TAsQueue:
+                removed_users_mails.append(user.mail)
+            for user in doc.professorsQueue:
+                removed_users_mails.append(user.mail)
+            for user in doc.visitingProfessorsQueue:
+                removed_users_mails.append(user.mail)
+            send_mail(message=message, subject='Outstanding request', from_email=Library.mail, recipient_list=removed_users_mails, auth_user=Library.mail, auth_password=Library.password)
+
+            message = 'Dear user, please return the copy of "' + doc.title + '" immediately due to outstanding request. You have only 1 day to return this document'
+            users_with_copy = []
+            for copy in doc.copies:
+                if copy.is_checked_out:
+                    users_with_copy.append(copy.user_card.user.mail)
+                    copy.overdue_date = datetime.date.today() + datetime.timedelta(days=1)
+            send_mail(message=message, subject='Outstanding request', from_email=Library.mail, recipient_list=users_with_copy, auth_user=Library.mail, auth_password=Library.password)
+        else:
+            print("You cannot perform this action")
+        # Допили этот метод
 
     def notify(self, user, document):
         user.available_documents.create(document=document, user=user)
         send_mail(
             message='Dear user, you have 1 day to take a copy of document you queued up for. After the expiration of this period you will lose this opportunity and will be removed from the queue. Good luck. Your InnoLib',
-            subject='Waiting notification', from_email=Library.mail, recipient_list=user.mail)
+            subject='Waiting notification', from_email=Library.mail, recipient_list=user.mail, auth_user=Library.mail, auth_password=Library.password)
         print("The message with notifying was sent to the email of "+user.first_name+" "+user.second_name+" about "+document.title)
 
-    def accept_doc(self, request):
-        request.copy.is_checked_out = False
-        request.user_card.copies.exclude(request.copy)
-        request.user_card.save()
-        request.copy.save()
+    def accept_doc(self, user, copy):
+        copy.is_checked_out = False
+        user.user_card.copies.exclude(copy)
+        user.user_card.save()
+        copy.save()
 
-        first = Document.first_in_queue(doc=request.copy.document)
-        self.notify(first, request.copy.document)
+        first = Document.first_in_queue(doc=copy.document)
+        self.notify(first, copy.document)
+
+    def accept_doc_after_outstanding_request(self, user, copy):
+        user.user_card.copies.exclude(copy)
+        user.user_card.save()
+        copy.delete()
 
     def count_unchecked_copies(self, doc):
         return len(doc.copies.filter(is_checked_out=False))
 
     def calculate_users_items(self, user):
-        return len(user.copies.all())
+        return len(user.copies.objects.all())
 
     def see_waiting_list(self, doc):
         queue = []
@@ -520,7 +532,8 @@ class Librarian(User):
 
     def create_copies(self, document, number):
         if self.level_of_privileges >= 2:
-            Copy.objects.create(document=document, number=number)
+            for i in range(number):
+                Copy.objects.create(document=document, number=number)
         else:
             print("You cannot perform this action")
 
@@ -551,11 +564,24 @@ class Librarian(User):
 
     def remove_copies(self, document, count):
         if self.level_of_privileges == 3:
-            removable = Copy.objects.get(document=document)
-            if removable.number > count:
-                removable.number -= count
-            else:
-                removable.delete()
+            for copy in document.copies:
+                if not copy.is_checked_out:
+                    copy.delete()
+                    count -= 1
+                    if count == 0:
+                        break
+            document.copies.save()
+            document.save()
+        else:
+            print("You cannot perform this action")
+
+    def remove_all_copies(self, document):
+        if self.level_of_privileges == 3:
+            for copy in document.copies:
+                if not copy.is_checked_out:
+                    copy.delete()
+            document.copies.save()
+            document.save()
         else:
             print("You cannot perform this action")
 
