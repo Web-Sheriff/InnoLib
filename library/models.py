@@ -10,11 +10,12 @@ from django.utils.timezone import now
 Class that generates LMS 
 '''
 
+# RENEW
+
 
 class Library(models.Model):
     mail = models.EmailField(default='InnoLib@yandex.ru', max_length=63)
     password = models.CharField(default='InnoTest', max_length=31)
-    user_cards = models.ForeignKey('UserCard', default=None, on_delete=models.DO_NOTHING, related_name='library')
 
     def count_unchecked_copies(self, doc):
         return len(doc.copies.filter(is_checked_out=False))
@@ -206,6 +207,7 @@ class JournalArticles(Document):
 
 
 class Copy(models.Model):
+    user_card = models.ForeignKey('UserCard', default=None, on_delete=models.DO_NOTHING, related_name='copies')
     document = models.ForeignKey(Document, on_delete=models.DO_NOTHING, related_name='copies')
     number = models.IntegerField()
     is_checked_out = models.BooleanField(default=False)
@@ -215,19 +217,19 @@ class Copy(models.Model):
     renew = models.ForeignKey("Librarian", on_delete=models.DO_NOTHING, related_name='renew', null=True)
     weeks_renew = models.ForeignKey("Librarian", on_delete=models.DO_NOTHING, related_name='weeks_renew', null=True)
 
-    def check_out(self, user):
-        if isinstance(self.document, ReferenceBook):
-            return False
-        if not self.document.copies.filter(user=user).exists():
-            return False
-        self.is_checked_out = True
-        self.user = user
-        self.booking_date = datetime.date.today()
-        self.overdue_date = self.booking_date + self.document.booking_period(user)
-        self.save()
-        return True
+    # def check_out(self, user):
+    #     if isinstance(self.document, ReferenceBook):
+    #         return False
+    #     if not self.document.copies.filter(user=user).exists():
+    #         return False
+    #     self.is_checked_out = True
+    #     self.user = user
+    #     self.booking_date = datetime.date.today()
+    #     self.overdue_date = self.booking_date + self.document.booking_period(user)
+    #     self.save()
+    #     return True
 
-    def if_overdue(self):
+    def is_overdue(self):
         return now() > self.overdue_date
 
     def overdue(self):
@@ -256,30 +258,30 @@ class User(models.Model):
 
 class UserCard(models.Model):
     user = models.OneToOneField(User, on_delete=models.DO_NOTHING, related_name='user_card')
-    library_card_number = models.IntegerField()
-    copies = models.ForeignKey(Copy, default=None, on_delete=models.DO_NOTHING, related_name='user_card')
+    library = models.ForeignKey(Library, default=None, on_delete=models.DO_NOTHING, related_name='user_cards')
+    library_card_number = models.IntegerField(default=None)
 
 
 ''' Special subclass for documents that can be accessible'''
 
 
-class AvailableDocs(models.Model):
-    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='available_documents')
-    document = models.OneToOneField(Document, on_delete=models.DO_NOTHING)
-    rights_date = models.DateField(now(), null=True, blank=True)
-
-    def check_date(self):
-        if self.rights_date != datetime.date.today():
-            queue = self.document.queue_type(doc=self.document, user=self.user)
-            queue.exclude(user_card=self.user.user_card)
-            queue.model.save()
-            self.user.available_documents.exclude(document=self.document, user=self.user)
-            self.user.available_documents.model.save()
-            if not self.document.has_queue():
-                return False
-            first = Document.first_in_queue(doc=self.document)
-            first.available_documents.create(document=self.document, user=first)
-            Librarian.notify(user=first, document=self.document)
+# class AvailableDocs(models.Model):
+#     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='available_documents')
+#     document = models.OneToOneField(Document, on_delete=models.DO_NOTHING)
+#     rights_date = models.DateField(now(), null=True, blank=True)
+#
+#     def check_date(self):
+#         if self.rights_date != datetime.date.today():
+#             queue = self.document.queue_type(doc=self.document, user=self.user)
+#             queue.exclude(user_card=self.user.user_card)
+#             queue.model.save()
+#             self.user.available_documents.exclude(document=self.document, user=self.user)
+#             self.user.available_documents.model.save()
+#             if not self.document.has_queue():
+#                 return False
+#             first = Document.first_in_queue(doc=self.document)
+#             first.available_documents.create(document=self.document, user=first)
+#             Librarian.notify(user=first, document=self.document)
 
 
 # there are 3 types of patrons: students, faculties and visiting professors
@@ -436,7 +438,7 @@ class Librarian(User):
 
     def outstanding_request(self, doc):
         if self.level_of_privileges >= 2:
-            self.remove_all_copies(doc)
+            self.remove_all_copies_without_check(doc)
 
             message = 'Dear user, sorry but you have been removed from the queue on document "' + doc.title + '" due to outstanding request'
             removed_users_mails = []
@@ -483,6 +485,7 @@ class Librarian(User):
         user.user_card.copies.exclude(copy)
         user.user_card.save()
         copy.delete()
+        copy.save()
 
     def count_unchecked_copies(self, doc):
         return len(doc.copies.filter(is_checked_out=False))
@@ -524,22 +527,27 @@ class Librarian(User):
     def create_book(self, library, is_best_seller, reference, title, price_value, edition, publisher, year):
         if self.level_of_privileges >= 2:
             class_model = ReferenceBook if reference else Book
-            return class_model.objects.create(library=library, title=title, price_value=price_value,
+            model = class_model.objects.create(library=library, title=title, price_value=price_value,
                                               is_best_seller=is_best_seller, edition=edition, publisher=publisher,
                                               publish_time=datetime.date.today(), year=year)
+            model.save()
+            return model
         else:
             print("You cannot perform this action")
 
     def create_copies(self, document, number):
         if self.level_of_privileges >= 2:
             for i in range(number):
-                Copy.objects.create(document=document, number=number)
+                copy = Copy.objects.create(document=document, number=number)
+                copy.save()
         else:
             print("You cannot perform this action")
 
     def create_av(self, library, title, publisher, year, price_value):
         if self.level_of_privileges >= 2:
-            return AudioVideo.objects.create(library=library, title=title, price_value=price_value, publisher=publisher, year=year)
+            av = AudioVideo.objects.create(library=library, title=title, price_value=price_value, publisher=publisher, year=year)
+            av.save()
+            return av
         else:
             print("You cannot perform this action")
 
@@ -550,7 +558,9 @@ class Librarian(User):
                                               password=password, first_name=first_name,
                                               second_name=second_name, address=address,
                                               phone_number=phone_number, mail=mail)
-            UserCard.objects.create(user=user, library_card_number=library_card_number, library=self.user_card.library)
+            user_card = UserCard.objects.create(user=user, library_card_number=library_card_number, library=self.user_card.library)
+            user.save()
+            user_card.save()
             return user
         else:
             print("You cannot perform this action")
@@ -558,7 +568,7 @@ class Librarian(User):
     def remove_object(self, class_model, obj):
         if self.level_of_privileges == 3:
             class_model.objects.get(id=obj.id).delete()
-            class_model.save(self)
+            obj.save()
         else:
             print("You cannot perform this action")
 
@@ -567,6 +577,7 @@ class Librarian(User):
             for copy in document.copies:
                 if not copy.is_checked_out:
                     copy.delete()
+                    copy.save()
                     count -= 1
                     if count == 0:
                         break
@@ -580,10 +591,19 @@ class Librarian(User):
             for copy in document.copies:
                 if not copy.is_checked_out:
                     copy.delete()
+                    copy.save()
             document.copies.save()
             document.save()
         else:
             print("You cannot perform this action")
+
+    def remove_all_copies_without_check(self, document):
+        for copy in document.copies:
+            if not copy.is_checked_out:
+                copy.delete()
+                copy.save()
+        document.copies.save()
+        document.save()
 
     # def patron_information(self, id):
     #     try:
@@ -631,5 +651,4 @@ class Admin(User):
 
     def delete_librarian(self, librarian):
         Librarian.objects.get(id=librarian.id).delete()
-        Librarian.save()
-
+        librarian.save()
