@@ -14,8 +14,8 @@ Class that generates LMS
 
 
 class Library(models.Model):
-    mail = models.EmailField(default='InnoLib@yandex.ru', max_length=63)
-    password = models.CharField(default='InnoTest', max_length=31)
+    mail = models.EmailField(default='InnoLib@yandex.ru', max_length=64)
+    password = models.CharField(default='InnoTest', max_length=32)
 
     def count_unchecked_copies(self, doc):
         return len(doc.copies.filter(is_checked_out=False))
@@ -63,7 +63,7 @@ Class for searching in the system with keywords of CharField types
 
 
 class Keyword(models.Model):
-    word = models.CharField(max_length=255)
+    word = models.CharField(max_length=256)
 
 
 # There are 3 types of documents: books, journal articles and audio/video files
@@ -291,7 +291,7 @@ class UserCard(models.Model):
 class Patron(User):
 
     # renew the document for n weeks
-    def renew(self, queue=Copy.renew):  # 13 requirement
+    def renew(self, queue=Copy.renew):
         # queue.add(self)
         # queue.model.save()
         pass
@@ -322,7 +322,7 @@ class Patron(User):
 
     # check out some copy of the document. If it is not possible returns False
     def check_out_doc(self, document):
-        for copy in self.user_card.copies.objects.all():
+        for copy in self.user_card.copies.all():
             if copy.document == document:
                 return False  # user has already checked this document
         queue = document.queue_type(doc=document, user=self)
@@ -410,17 +410,22 @@ class Librarian(User):
 
     level_of_privileges = models.IntegerField(default=1)
 
-    def handle_book(self, user, copy):
-        queue = copy.document.queue_type(doc=copy.document, user=user)
+    def handle_book(self, user, doc):
+        queue = doc.document.queue_type(doc=doc, user=user)
         if user.id == queue.first().id:
-            copy.is_checked_out = True
-            user.user_card.copies.add(copy)
-            copy.booking_date = datetime.date.today()
-            queue.exclude(user_card=user.user_card)
-            queue.model.save()
-            self.user_card.save()
-            copy.save()
-            return True
+            for copy in doc.copies:
+                if not copy.is_checked_out:
+                    copy.is_checked_out = True
+                    user.user_card.copies.add(copy)
+                    copy.booking_date = datetime.date.today()
+                    queue.exclude(user_card=user.user_card)
+                    queue.model.save()
+                    user.user_card.save()
+                    user.save()
+                    copy.save()
+                    return True
+            print("This book have not any copy")
+            return False
         else:
             print("This user is not first in queue")
             return False
