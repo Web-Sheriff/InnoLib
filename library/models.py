@@ -23,12 +23,6 @@ class Library(models.Model):
     def calculate_users_items(self, user):
         return len(user.copies.all())
 
-    def is_due(self):
-        pass
-
-    def overdue_fines(self):
-        pass
-
 
 ''' 
 every user has exactly one user card

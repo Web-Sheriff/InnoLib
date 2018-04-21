@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% block content %}
+<h1 style="position: fixed; top: 90px; left: 700px;); ">List of Books</h1>
+  <form method="POST" class="list" style="position: fixed; top: 150px; left: 600px; border: #FCA205 5px solid " ;>
+       {% csrf_token %}
+        {{ books_for_user.as_p }}
+        <table>
+            {% for i in books_for_user %}
+                print zz
+                  <tr class='success'>
+                        <td>{{i.title}}</td>
+                        <td>{{ i.Document.copies.get.book.authors}}</td>
+                  </tr>
+                <break></break>
+            {% endfor %}
+        </table>
+    </form>
+  {% endblock %}
+</body>
+</html>
+
