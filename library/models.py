@@ -207,7 +207,7 @@ class JournalArticles(Document):
 
 
 class Copy(models.Model):
-    user_card = models.ForeignKey('UserCard', default=None, on_delete=models.DO_NOTHING, related_name='copies')
+    user_card = models.ForeignKey('UserCard', default=None, on_delete=models.DO_NOTHING, related_name='copies', null=True)
     document = models.ForeignKey(Document, on_delete=models.DO_NOTHING, related_name='copies')
     number = models.IntegerField()
     is_checked_out = models.BooleanField(default=False)
@@ -533,8 +533,7 @@ class Librarian(User):
         if self.level_of_privileges >= 2:
             class_model = ReferenceBook if reference else Book
             model = class_model.objects.create(library=library, title=title, price_value=price_value,
-                                              is_best_seller=is_best_seller, edition=edition, publisher=publisher,
-                                              publish_time=datetime.date.today(), year=year)
+                                              is_best_seller=is_best_seller, edition=edition, publisher=publisher, year=year)
             model.save()
             return model
         else:
