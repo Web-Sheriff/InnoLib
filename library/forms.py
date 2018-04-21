@@ -1,5 +1,5 @@
 from django import forms
-from .models import Login, User, Book
+from .models import *
 
 
 class LoginForm(forms.ModelForm):
@@ -26,10 +26,17 @@ class UserForm(forms.ModelForm):
         exclude = [""]
 
 
+class ProfessorForm(forms.ModelForm):
+    class Meta:
+        model = Professor
+        fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail')
+        exclude = [""]
+
+
 class BookForm(forms.ModelForm):
     class Meta:
         model = Book
-        fields = ('library','title', 'price_value', 'is_best_seller', 'edition', 'publisher',)
+        fields = ('library','title', 'price_value', 'is_best_seller', 'edition', 'publisher','year')
         exclude = [""]
 
 

@@ -10,8 +10,8 @@
     <!-- For working with form -->
         {% block content %}
         <h1 style="position: fixed; top: 130px; left: 625px;); ">Adding a patron</h1>
-            <form method="USER" class="librarian_add_user" style="position: fixed; top: 200px; left: 550px; border: #FCA205 5px solid " ;>{% csrf_token %}
-            {{ form.as_p}}
+            <form method="POST" class="librarian_add_user" style="position: fixed; top: 200px; left: 550px; border: #FCA205 5px solid " ;>{% csrf_token %}
+            {{ user.as_p}}
 
 		<button type="submit" class="save btn btn-default" style="margin-top: 5px; background: yellow">Add</button>
                 <input type="checkbox" name="option1" value="a1">Student<Br>

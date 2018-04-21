@@ -12,32 +12,19 @@ class UserListView(generic.ListView):
     model = User
 
 
+class BookListView(generic.ListView):
+    model = Book
+
+
+
 def library(request):
-    if request.method == "POST":
-        form = LoginForm(request.POST)
-        if form.is_valid():
-            post = form.save(commit=False)
-            #post.author = request.user
-            #post.published_date = timezone.now()
-            post.save()
-            return redirect('post_detail', pk=post.pk)
-    else:
-        form = LoginForm()
-    return render(request, 'library/libsystem_loggined.html', {'form': form})
+    Doc = Document.objects.all()
+    return render(request, 'library/books_for_user.html', locals())
 
 
-def logined_library(request):
-    if request.method == "POST":
-        form = LoginForm(request.POST)
-        if form.is_valid():
-            post = form.save(commit=False)
-            #post.author = request.user
-            #post.published_date = timezone.now()
-            post.save()
-            return redirect('post_detail', pk=post.pk)
-    else:
-        form = LoginForm()
-    return render(request, 'library/libsystem.html', {'form': form})
+def books_for_user(request):
+    Doc = Document.objects.all()
+    return render(request, 'library/books_for_user.html', locals())
 
 
 def signup(request):
@@ -56,22 +43,26 @@ def login(request):
         form = LoginForm(request.POST)
         if form.is_valid():
             post = form.save(commit=False)
-            #post.author = request.user
-            #post.published_date = timezone.now()
             post.save()
-            return redirect('signup')
+            return redirect('library/books_for_user.html')
     else:
         form = LoginForm()
     return render(request, 'library/login.html', {'form': form})
+
 
 def list_of_books(request):
     Doc = Document.objects.all()
     return render(request, 'library/user_list.html', locals())
 
 
-def list_to_delete(request):
+def logined_library(request):
     Doc = Document.objects.all()
-    return render(request, 'library/librarian_list.html', locals())
+    return render(request, 'library/user_list.html', locals())
+
+
+def list_to_delete(request):
+    Doc = Book.objects.all()
+    return render(request, 'library/books_for_user.html', locals())
 
 
 def librarian_add_book(request):

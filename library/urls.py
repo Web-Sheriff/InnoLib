@@ -10,4 +10,5 @@ urlpatterns = [
     url(r'^librarian_list', views.list_to_delete, name='librarian_list'),
     url(r'^librarian_add_book', views.librarian_add_book, name='librarian_add_book'),
     url(r'^librarian_add_user', views.librarian_add_user, name='librarian_add_user'),
+    url(r'^books_for_user', views.books_for_user, name='books_for_user'),
 ]
