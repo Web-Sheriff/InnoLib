@@ -1,4 +1,5 @@
 from django.conf.urls import url
+from django.urls import path
 from . import views
 
 urlpatterns = [
@@ -11,4 +12,6 @@ urlpatterns = [
     url(r'^librarian_add_book', views.librarian_add_book, name='librarian_add_book'),
     url(r'^librarian_add_user', views.librarian_add_user, name='librarian_add_user'),
     url(r'^books_for_user', views.books_for_user, name='books_for_user'),
+    path('users/<int:pk>/', views.user_detail.as_view(), name='user_detail'),
+    path('users/<int:pk>/delete_user/', views.librarian_delete_user, name='delete_user'),
 ]

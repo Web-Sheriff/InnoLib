@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 #from django.contrib.auth.forms import UserCreationForm
 #from django.contrib.auth import login, authenticate
 from .forms import LoginForm, SignUpForm,BookForm,UserForm
+from django.http import  HttpResponseRedirect
 from library.models import *
 from django.views.generic import TemplateView
 # Create your views here.
@@ -16,6 +17,9 @@ class BookListView(generic.ListView):
     model = Book
 
 
+class user_detail(generic.DetailView):
+    model = User
+
 
 def library(request):
     Doc = Document.objects.all()
@@ -23,7 +27,11 @@ def library(request):
 
 
 def books_for_user(request):
-    Doc = Document.objects.all()
+    all_documents = Document.objects.all()
+    print('\n\n\n--------\n\n\n')
+    for doc in all_documents:
+        for author in doc.authors.all():
+            print(author.name)
     return render(request, 'library/books_for_user.html', locals())
 
 
@@ -61,7 +69,7 @@ def logined_library(request):
 
 
 def list_to_delete(request):
-    Doc = Book.objects.all()
+    Doc = Document.objects.all()
     return render(request, 'library/books_for_user.html', locals())
 
 
@@ -92,4 +100,8 @@ def librarian_add_user(request):
         form = User()
     return render(request, 'library/librarian_add_user.html', {'form': form})
 
-
+def librarian_delete_user(request, pk):
+    user = User.objects.get(pk=pk)
+    user.delete()
+    print('\n\n\n')
+    return HttpResponseRedirect('/')

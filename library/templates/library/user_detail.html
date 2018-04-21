@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+USER:
+{{ user }}
+K
+{{ user.first_name }}
+D
+{{ user.id }}
+<a href="{% url 'delete_user' user.id %}">Delete user</a>
+</body>
+</html>
