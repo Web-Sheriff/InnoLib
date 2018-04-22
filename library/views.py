@@ -52,13 +52,13 @@ def librarian_add_book(request):
     return render(request, 'library/librarian_add_book.html', {'form': form})
 
 
-def logined_for_librarian(request):
+def logined_for_librarian(request,i):
     return render(request, 'library/logined_for_librarian.html', locals())
 
-def logined_for_patron(request):
+def logined_for_patron(request,i):
     return render(request, 'library/logined_for_patron.html', locals())
 
-def logined_for_admin(request):
+def logined_for_admin(request,i):
     return render(request, 'library/logined_for_admin.html', locals())
 
 
@@ -116,7 +116,12 @@ def login(request):
                 if post.username == i.login:
                     login_exits = True
                     if post.password == i.password:
-                        return redirect('logined_for_patron')
+                        if isinstance(i,Librarian):
+                            return logined_for_librarian(request,i)
+                        elif isinstance(i,Admin):
+                            return logined_for_admin(request,i)
+                        else:
+                            return logined_for_patron(request,i)
             if login_exits:
                 return render(request, 'library/not_valid_password.html', {'form': form})
             else:
