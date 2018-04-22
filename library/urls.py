@@ -23,6 +23,9 @@ urlpatterns = [
     url(r'^logined_for_patron', views.logined_for_patron, name='logined_for_patron'),
     url(r'^list_of_librarians', views.list_of_librarians, name='list_of_librarians'),
     url(r'^admin_add_librarian', views.admin_add_librarian, name='admin_add_librarian'),
+    url(r'^adding_doc_start', views.adding_doc_start, name='adding_doc_start'),
     path('users/<int:pk>/', views.user_detail.as_view(), name='user_detail'),
+    path('patrons/<int:pk>/', views.patron_detail.as_view(), name='patron_detail'),
+    path('librarians/<int:pk>/', views.librarian_detail.as_view(), name='librarian_detail'),
     path('users/<int:pk>/delete_user/', views.librarian_delete_user, name='delete_user'),
 ]

@@ -26,6 +26,14 @@ class user_detail(generic.DetailView):
     model = User
 
 
+class patron_detail(generic.DetailView):
+    model = Patron
+
+
+class librarian_detail(generic.DetailView):
+    model = Librarian
+
+
 def library(request):
     Doc = Document.objects.all()
     return render(request, 'library/libsystem.html', locals())
@@ -144,14 +152,6 @@ def list_of_librarians(request):
     lib = Librarian.objects.all()
     return render(request, 'library/list_of_librarians.html', locals())
 
-def starter_page_for_librarian(request):
-    return render(request, 'library/starter_page_for_librarian.html', locals())
-
-def starter_page_for_user(request):
-    return render(request, 'library/starter_page_for_user.html', locals())
-
-def starter_page_for_admin(request):
-    return render(request, 'library/starter_page_for_admin.html', locals())
 
 def logined_library(request):
     Doc = Document.objects.all()
@@ -163,8 +163,12 @@ def list_to_delete(request):
     return render(request, 'library/books_for_user.html', locals())
 
 
+def adding_doc_start(request):
+    return render(request, 'adding_doc_start.html', locals())
+
+
 def librarian_delete_user(request, pk):
-    user = User.objects.get(pk=pk)
-    user.delete()
+    current_user = User.objects.get(pk=pk)
+    s1 = Librarian.remove_object(Librarian,User,current_user)
     print('\n\n\n')
     return HttpResponseRedirect('/')
