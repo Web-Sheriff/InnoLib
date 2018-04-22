@@ -6,9 +6,9 @@
 </head>
 <body>
 {% block content %}
-<h1 style="position: fixed; top: 90px; left: 700px;); ">List of Users</h1>
+<h1 style="position: fixed; top: 90px; left: 700px;); ">List of Books</h1>
 
-  <form method="POST" class="list" style="position: fixed; top: 150px; left: 600px; border: #FCA205 5px solid " ;>
+  <form method="POST" class="list" style="position: fixed; top: 150px; left: 600px; border: #FCA205 5px solid " >
        {% csrf_token %}
         {{ user_list.as_p }}
         <table>
