@@ -14,6 +14,10 @@ class UserListView(generic.ListView):
     model = User
 
 
+class LibrarianListView(generic.ListView):
+    model = Librarian
+
+
 class BookListView(generic.ListView):
     model = Book
 
@@ -29,10 +33,11 @@ def library(request):
 
 def books_for_user(request):
     all_documents = Document.objects.all()
-    print('\n\n\n--------\n\n\n')
-    for doc in all_documents:
-        for author in doc.authors.all():
-            print(author.name)
+    return render(request, 'library/books_for_user.html', locals())
+
+
+def books_for_librarian(request):
+    all_documents = Document.objects.all()
     return render(request, 'library/books_for_user.html', locals())
 
 
@@ -56,6 +61,18 @@ def signup(request):
     else:
         form = SignUpForm()
     return render(request, 'library/signup.html', {'form': form})
+
+
+def librarian_add_user(request):
+    if request.method == "POST":
+        form = UserForm(request.POST)
+        if form.is_valid():
+            post = form.save(commit=True)
+            post.save()
+            return redirect('', pk=post.pk)
+    else:
+        form = User()
+    return render(request, 'library/librarian_add_user.html', {'form': form})
 
 
 # def login(request):
@@ -92,10 +109,19 @@ def login(request):
 def login_not_valid(request):
     return render(request, 'library/not_valid_login.html')
 
+
 def list_of_books(request):
     Doc = Document.objects.all()
     return render(request, 'library/user_list.html', locals())
 
+
+def librarian_list(request):
+    lib = Document.objects.all()
+    print ('kkk')
+    return render(request, 'library/librarian_list.html', locals())
+
+def starter_page_for_librarian(request):
+    return render(request, 'library/starter_page_for_librarian.html', locals())
 
 def logined_library(request):
     Doc = Document.objects.all()
@@ -106,18 +132,6 @@ def list_to_delete(request):
     Doc = Document.objects.all()
     return render(request, 'library/books_for_user.html', locals())
 
-
-
-def librarian_add_user(request):
-    if request.method == "POST":
-        form = UserForm(request.POST)
-        if form.is_valid():
-            post = form.save(commit=True)
-            post.save()
-            return redirect('post_detail', pk=post.pk)
-    else:
-        form = User()
-    return render(request, 'library/librarian_add_user.html', {'form': form})
 
 def librarian_delete_user(request, pk):
     user = User.objects.get(pk=pk)

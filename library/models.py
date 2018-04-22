@@ -124,6 +124,7 @@ class Book(Document):
     edition = models.CharField(max_length=128)
     publisher = models.CharField(max_length=64)
     year = models.IntegerField()
+    #authors_names = models.
 
     def booking_period(self, user):
         if isinstance(user, Faculty):
@@ -522,16 +523,6 @@ class Librarian(User):
                 if copy.if_overdue():
                     card.user.fine += copy.overdue * copy.document.price_value
 
-    def create_book(self, library, is_best_seller, reference, title, price_value, edition, publisher, year):
-        if self.level_of_privileges >= 2:
-            class_model = ReferenceBook if reference else Book
-            model = class_model.objects.create(library=library, title=title, price_value=price_value,
-                                              is_best_seller=is_best_seller, edition=edition, publisher=publisher, year=year)
-            model.save()
-            return model
-        else:
-            print("You cannot perform this action")
-
     def create_copies(self, document, number):
         if self.level_of_privileges >= 2:
             for i in range(number):
@@ -580,6 +571,36 @@ class Librarian(User):
                         break
             document.copies.save()
             document.save()
+        else:
+            print("You cannot perform this action")
+
+    def create_authors(self, list_of_names):
+        if self.level_of_privileges >= 2:
+            list = []
+            for name in list_of_names:
+                author = Author.objects.create(name=name)
+                author.save()
+                list.append(author)
+            return list
+
+    def create_author(self, name):
+        if self.level_of_privileges >= 2:
+            author = Author.objects.create(name=name)
+            author.save()
+
+    def create_book(self, library, is_best_seller, reference, title, price_value, edition, publisher, year,
+                    authors_names):
+        if self.level_of_privileges >= 2:
+            authors = self.create_authors(authors_names)
+            class_model = ReferenceBook if reference else Book
+            model = class_model.objects.create(library=library, title=title, price_value=price_value,
+                                               is_best_seller=is_best_seller, edition=edition, publisher=publisher,
+                                               year=year)
+            model.save()
+            for author in authors:
+                model.authors.add(author)
+            model.save()
+            return model
         else:
             print("You cannot perform this action")
 

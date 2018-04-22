@@ -4,13 +4,10 @@
         <meta charset="UTF-8">
         <title>Adding a book</title>
     </head>
-
     <body>
-
-    <!-- For working with form -->
         {% block content %}
-        <h1 style="position: fixed; top: 130px; left: 625px;); ">Adding a book</h1>
-            <form method="POST" class="librarian_add_book" style="position: fixed; top: 200px; left: 550px; border: #FCA205 5px solid " >
+        <h1 style="position: fixed; top: 45px; left: 575px;); ">Adding a book</h1>
+            <form method="POST" class="librarian_add_book" style="position: fixed; top: 100px; left: 550px; border: #FCA205 5px solid " >
                 {% csrf_token %}
             {{ form.as_p }}
 		<button type="submit" class="btn btn-default" style="margin-top: 5px; background: yellow"  >Add</button>

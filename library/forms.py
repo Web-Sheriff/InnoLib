@@ -40,7 +40,7 @@ class ProfessorForm(forms.ModelForm):
 class BookForm(forms.ModelForm):
     class Meta:
         model = Book
-        fields = ('library','title', 'price_value', 'is_best_seller', 'edition', 'publisher','year')
+        fields = ('library','title', 'price_value', 'authors','is_best_seller', 'edition', 'publisher','year')
         exclude = [""]
 
 

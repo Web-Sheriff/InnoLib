@@ -13,6 +13,10 @@ urlpatterns = [
     url(r'^librarian_add_book', views.librarian_add_book, name='librarian_add_book'),
     url(r'^librarian_add_user', views.librarian_add_user, name='librarian_add_user'),
     url(r'^books_for_user', views.books_for_user, name='books_for_user'),
+    url(r'^books_for_librarian', views.books_for_librarian, name='books_for_librarian'),
+    url(r'^books_for_librarian', views.books_for_librarian, name='books_for_librarian'),
+    url(r'^starter_page_for_librarian', views.starter_page_for_librarian, name='starter_page_for_librarian'),
+    url(r'^librarian_list', views.librarian_list, name='librarian_list'),
     path('users/<int:pk>/', views.user_detail.as_view(), name='user_detail'),
     path('users/<int:pk>/delete_user/', views.librarian_delete_user, name='delete_user'),
     path('accounts/', include('django.contrib.auth.urls'))
