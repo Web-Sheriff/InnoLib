@@ -63,11 +63,16 @@ def login(request):
         form = LoginForm(request.POST)
         if form.is_valid():
             post = form.save(commit=False)
+            login_exits = False
             for i in User.objects.all():
                 if post.username == i.login:
+                    login_exits = True
                     if post.password == i.password:
                         return redirect('libsystem')
-            return redirect('login')
+            if login_exits:
+                return render(request, 'library/not_valid_password.html', {'form': form})
+            else:
+                return render(request, 'library/not_valid_login.html', {'form': form})
     else:
         form = LoginForm()
     return render(request, 'library/login.html', {'form': form})
