@@ -69,7 +69,7 @@ def login(request):
                 if post.username == i.login:
                     login_exits = True
                     if post.password == i.password:
-                        return redirect('libsystem')
+                        return redirect('starter_page_for_user')
             if login_exits:
                 return render(request, 'library/not_valid_password.html', {'form': form})
             else:
@@ -101,11 +101,9 @@ def librarian_add_book(request):
     if request.method == "POST":
         form = BookForm(request.POST)
         if form.is_valid():
-            post = form.save(commit=False)
-            #post.author = request.user
-            #post.published_date = timezone.now()
+            post = form.save(commit=True)
             post.save()
-            return redirect('post_detail', pk=post.pk)
+            return redirect('books_for_admin', pk=post.pk)
     else:
         form = Book()
     return render(request, 'library/librarian_add_book.html', {'form': form})
