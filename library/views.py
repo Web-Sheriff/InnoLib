@@ -5,7 +5,7 @@ from django.template import loader, RequestContext
 from .forms import LoginForm, SignUpForm,BookForm,UserForm, LibrarianForm
 from django.http import  HttpResponseRedirect
 from library.models import *
-from django.views.generic import TemplateView
+# from django.views.generic import TemplateView
 # Create your views here.
 from django.views import generic
 

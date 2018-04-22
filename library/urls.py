@@ -4,9 +4,9 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.library, name='libsystem'),
-    url(r'^account', views.logined_for_patron(), name='logined_for_patron'),
-    url(r'^lib_account', views.logined_for_librarian(), name='logined_for_librarian'),
-    url(r'^lib_admin', views.logined_for_admin(), name='logined_for_admin'),
+    url(r'^account', views.logined_for_patron, name='logined_for_patron'),
+    url(r'^lib_account', views.logined_for_librarian, name='logined_for_librarian'),
+    url(r'^lib_admin', views.logined_for_admin, name='logined_for_admin'),
     url(r'libsystem_logined/', views.logined_library, name='libsystem_logined'),
     url(r'^innolib', views.login, name='login'),
     url(r'^signup', views.signup, name='signup'),
@@ -23,6 +23,6 @@ urlpatterns = [
     #url(r'^starter_page_for_user', views.starter_page_for_user, name='starter_page_for_user'),
     url(r'^list_of_librarians', views.list_of_librarians, name='list_of_librarians'),
     url(r'^admin_add_librarian', views.admin_add_librarian, name='admin_add_librarian'),
-    path('users/<int:pk>/', views.user_detail.as_view(), name='user_detail'),
+    path('users/<int:pk>/', views.user_detail.as_view, name='user_detail'),
     path('users/<int:pk>/delete_user/', views.librarian_delete_user, name='delete_user'),
 ]
