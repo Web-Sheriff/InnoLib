@@ -23,12 +23,12 @@
   <form method="POST" class="signup" style="position: fixed; top: 150px; left: 600px; border: #FCA205 5px solid " ;>
        {% csrf_token %}
 
-      {#  {{ form.as_p }}#}
-                <input type="checkbox" name="class1" value="student">Student<Br>
-                <input type="checkbox" name="class1" value="ta">TA<Br>
-                <input type="checkbox" name="class1" value="professor">Professor<Br>
-                <input type="checkbox" name="class1" value="visiting professor">VisitingProfessor<Br>
-                <input type="checkbox" name="class1" value="instructor">Instructor<Br>
+       {{ form.as_p }}
+                #<input type="checkbox" name="class1" value="student">Student<Br>
+                #<input type="checkbox" name="class1" value="ta">TA<Br>
+               # <input type="checkbox" name="class1" value="professor">Professor<Br>
+                #<input type="checkbox" name="class1" value="visiting professor">VisitingProfessor<Br>
+               # <input type="checkbox" name="class1" value="instructor">Instructor<Br>
 
         <input type="submit" class="btn btn-default" style="margin-top: 5px; background: yellow;;" value="Submit"/>
    </form>
