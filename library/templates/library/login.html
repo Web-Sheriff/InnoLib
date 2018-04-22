@@ -1,29 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>login</title>
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <title>login</title>
+</head>
 
-    <body>
+<body>
 
-    <!-- For working with form -->
-        {% block content %}
-        <h1 style="position: fixed; top: 130px; left: 625px;); ">Login</h1>
-            <form method="POST" class="login" style="position: fixed; top: 200px; left: 550px; border: #FCA205 5px solid " ;>
-                {% csrf_token %}
-                {{ form.as_p }}
-		
-{#		<button type="submit" class="save btn btn-default" style="margin-top: 5px; background: yellow">Log in0</button>#}
-{#        The next row about the bottom login              #}
-                <input type="submit" class="btn btn-default" style="margin-top: 5px; background: greenyellow;;" value="Login"/>
-                <button type="button" onclick="window.location.href='http://127.0.0.1:8000/signup'"
+<!-- For working with form -->
+{% block content %}
+    <style> h1 {
+        background: #D9FFAD;
+        color: darkgreen;
+        padding: 2px;
+    }
+    </style>
+    <h1 style="position: fixed; top: 80px; left: 525px;); ">Welcome to InnoLib!</h1>
+    <h2 style="position: fixed; top: 130px; left: 650px;); ">Login</h2>
+    <form method="POST" class="login" style="position: fixed; top: 200px; left: 550px; border: #FCA205 5px solid " ;>
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        {#		<button type="submit" class="save btn btn-default" style="margin-top: 5px; background: yellow">Log in0</button>#}
+        {#        The next row about the bottom login              #}
+        <input type="submit" class="btn btn-default" style="margin-top: 5px; background: greenyellow;;" value="Login"/>
+        <button type="button" onclick="window.location.href='http://127.0.0.1:8000/signup'"
                 style="margin-left: 15px; background: royalblue; color: ghostwhite;"> I am not signed up
-                </button>
+        </button>
 
-            </form>
+    </form>
 
-        {% endblock %}
+{% endblock %}
 
-    </body>
+</body>
 </html>

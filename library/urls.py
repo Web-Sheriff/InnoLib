@@ -20,5 +20,4 @@ urlpatterns = [
     url(r'^list_of_librarians', views.list_of_librarians, name='list_of_librarians'),
     path('users/<int:pk>/', views.user_detail.as_view(), name='user_detail'),
     path('users/<int:pk>/delete_user/', views.librarian_delete_user, name='delete_user'),
-    path('accounts/', include('django.contrib.auth.urls'))
 ]
