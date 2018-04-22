@@ -11,7 +11,7 @@ urlpatterns = [
     url(r'^innolib', views.login, name='login'),
     url(r'^signup', views.signup, name='signup'),
     url(r'^login_not_valid', views.login_not_valid, name='login_not_valid'),
-    url(r'^user_list', views.UserListView.as_view, name='user_list'),
+    url(r'^user_list', views.UserListView.as_view(), name='user_list'),
     url(r'^librarian_list', views.list_to_delete, name='librarian_list'),
     url(r'^librarian_add_book', views.librarian_add_book, name='librarian_add_book'),
     url(r'^librarian_add_user', views.librarian_add_user, name='librarian_add_user'),
@@ -23,6 +23,6 @@ urlpatterns = [
     url(r'^starter_page_for_user', views.starter_page_for_user, name='starter_page_for_user'),
     url(r'^list_of_librarians', views.list_of_librarians, name='list_of_librarians'),
     url(r'^admin_add_librarian', views.admin_add_librarian, name='admin_add_librarian'),
-    path('users/<int:pk>/', views.user_detail.as_view, name='user_detail'),
+    path('users/<int:pk>/', views.user_detail.as_view(), name='user_detail'),
     path('users/<int:pk>/delete_user/', views.librarian_delete_user, name='delete_user'),
 ]
