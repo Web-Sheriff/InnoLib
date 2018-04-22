@@ -4,11 +4,15 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.library, name='libsystem'),
+    url(r'^account', views.starter_page_for_user, name='logined_for_patron'),
+    url(r'^lib_account', views.starter_page_for_librarian, name='logined_for_librarian'),
+    url(r'^lib_admin', views.starter_page_for_admin, name='logined_for_admin'),
     url(r'libsystem_logined/', views.logined_library, name='libsystem_logined'),
-    url(r'^login', views.login, name='login'),
+    url(r'^innolib', views.login, name='login'),
     url(r'^signup', views.signup, name='signup'),
     url(r'^login_not_valid', views.login_not_valid, name='login_not_valid'),
-    url(r'^user_list', views.UserListView.as_view(), name='user_list'),
+    url(r'^user_list', views.UserListView.as_view, name='user_list'),
+    url(r'^librarian_list', views.list_to_delete, name='librarian_list'),
     url(r'^librarian_add_book', views.librarian_add_book, name='librarian_add_book'),
     url(r'^librarian_add_user', views.librarian_add_user, name='librarian_add_user'),
     url(r'^books_for_user', views.books_for_user, name='books_for_user'),
