@@ -4,9 +4,9 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.library, name='libsystem'),
-    url(r'^account', views.starter_page_for_user, name='logined_for_patron'),
-    url(r'^lib_account', views.starter_page_for_librarian, name='logined_for_librarian'),
-    url(r'^lib_admin', views.starter_page_for_admin, name='logined_for_admin'),
+    url(r'^account', views.logined_for_patron(), name='logined_for_patron'),
+    url(r'^lib_account', views.logined_for_librarian(), name='logined_for_librarian'),
+    url(r'^lib_admin', views.logined_for_admin(), name='logined_for_admin'),
     url(r'libsystem_logined/', views.logined_library, name='libsystem_logined'),
     url(r'^innolib', views.login, name='login'),
     url(r'^signup', views.signup, name='signup'),
