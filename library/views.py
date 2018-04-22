@@ -41,7 +41,8 @@ def signup(request):
         form = SignUpForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('user_list') # it should be index
+            # return redirect('user_list') # it should be index
+            return login(request)
     else:
         form = SignUpForm()
     return render(request, 'library/signup.html', {'form': form})
