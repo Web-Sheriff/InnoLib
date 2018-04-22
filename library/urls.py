@@ -1,12 +1,14 @@
 from django.conf.urls import url
-from django.urls import path
+from django.urls import path, include
 from . import views
 
 urlpatterns = [
     url(r'^$', views.library, name='libsystem'),
     url(r'libsystem_logined/', views.logined_library, name='libsystem_logined'),
+    path('accounts/', include('django.contrib.auth.urls')),
     url(r'^login', views.login, name='login'),
     url(r'^signup', views.signup, name='signup'),
+    url(r'^login_not_valid', views.login_not_valid, name='login_not_valid'),
     url(r'^user_list', views.UserListView.as_view(), name='user_list'),
     url(r'^librarian_list', views.list_to_delete, name='librarian_list'),
     url(r'^librarian_add_book', views.librarian_add_book, name='librarian_add_book'),

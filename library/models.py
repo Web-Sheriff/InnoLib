@@ -34,7 +34,6 @@ user card has unique number
 Login class for identifying in the system
 '''
 
-
 class Login(models.Model):
     username = models.CharField(max_length=64)
     password = models.CharField(max_length=64)

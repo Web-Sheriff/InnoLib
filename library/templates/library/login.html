@@ -10,14 +10,19 @@
     <!-- For working with form -->
         {% block content %}
         <h1 style="position: fixed; top: 130px; left: 625px;); ">Login</h1>
-            <form method="POST" class="login" style="position: fixed; top: 200px; left: 550px; border: #FCA205 5px solid " ;>{% csrf_token %}
-            {{ form.as_p }}
+            <form method="POST" class="login" style="position: fixed; top: 200px; left: 550px; border: #FCA205 5px solid " ;>
+                {% csrf_token %}
+                {{ form.as_p }}
 		
-		<button type="submit" class="save btn btn-default" style="margin-top: 5px; background: yellow">Log in</button>
-                <button type="button" onclick="window.location.href='http://127.0.0.1:8000/signup'" style="margin-left: 15px; background: green; color:ghostwhite;"> Sign up</button>
-
+{#		<button type="submit" class="save btn btn-default" style="margin-top: 5px; background: yellow">Log in0</button>#}
+{#        The next row about the bottom login              #}
+                <input type="submit" class="btn btn-default" style="margin-top: 5px; background: greenyellow;;" value="Login"/>
+                <button type="button" onclick="window.location.href='http://127.0.0.1:8000/signup'"
+                style="margin-left: 15px; background: royalblue; color: ghostwhite;"> I am not signed up
+                </button>
 
             </form>
+
         {% endblock %}
 
     </body>

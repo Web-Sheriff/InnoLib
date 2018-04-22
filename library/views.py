@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
-#from django.contrib.auth.forms import UserCreationForm
-#from django.contrib.auth import login, authenticate
+from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseForbidden
+from django.contrib import auth
+from django.template import loader, RequestContext
 from .forms import LoginForm, SignUpForm,BookForm,UserForm
 from django.http import  HttpResponseRedirect
 from library.models import *
@@ -23,7 +24,7 @@ class user_detail(generic.DetailView):
 
 def library(request):
     Doc = Document.objects.all()
-    return render(request, 'library/books_for_user.html', locals())
+    return render(request, 'library/libsystem.html', locals())
 
 
 def books_for_user(request):
@@ -46,17 +47,34 @@ def signup(request):
     return render(request, 'library/signup.html', {'form': form})
 
 
+# def login(request):
+#     if request.method == "POST":
+#         form = LoginForm(request.POST)
+#         if form.is_valid():
+#             post = form.save(commit=False)
+#             post.save()
+#             return redirect('library/books_for_user.html')
+#     else:
+#         form = LoginForm()
+#     return render(request, 'library/login.html', {'form': form})
+
 def login(request):
     if request.method == "POST":
         form = LoginForm(request.POST)
         if form.is_valid():
             post = form.save(commit=False)
-            post.save()
-            return redirect('library/books_for_user.html')
+            for i in User.objects.all():
+                if post.username == i.login:
+                    if post.password == i.password:
+                        return redirect('libsystem')
+            return redirect('login')
     else:
         form = LoginForm()
     return render(request, 'library/login.html', {'form': form})
 
+
+def login_not_valid(request):
+    return render(request, 'library/not_valid_login.html')
 
 def list_of_books(request):
     Doc = Document.objects.all()
