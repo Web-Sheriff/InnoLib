@@ -249,7 +249,7 @@ class User(models.Model):
 
 
 class UserCard(models.Model):
-    user = models.OneToOneField(User, on_delete=models.DO_NOTHING, related_name='user_card')
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='user_card')
     library = models.ForeignKey(Library, default=None, on_delete=models.DO_NOTHING, related_name='user_cards')
     library_card_number = models.IntegerField(default=None)
 
@@ -392,13 +392,16 @@ class Librarian(User):
                     copy.is_checked_out = True
                     user.user_card.copies.add(copy)
                     copy.booking_date = datetime.date.today()
-                    queue = queue.all().exclude(id=user.id)
-                    queue.model.save(user)
+                    for us in queue.all():
+                        print(us)
+                    queue.remove(user)
+                    doc.save()
                     user.user_card.save()
                     user.save()
                     copy.save()
-                    for user in queue.all():
-                        print(user.first_name)
+                    for us in queue.all():
+                        print("Handle book does not works")
+                        print(us)
                     return True
             print("This book have not any available copy")
             return False
@@ -423,25 +426,28 @@ class Librarian(User):
 
             message = 'Dear user, sorry but you have been removed from the queue on document "' + doc.title + '" due to outstanding request'
             removed_users_mails = []
-            for user in doc.studentsQueue:
+            for user in doc.studentsQueue.all():
                 removed_users_mails.append(user.mail)
-            for user in doc.instructorsQueue:
+            for user in doc.instructorsQueue.all():
                 removed_users_mails.append(user.mail)
-            for user in doc.TAsQueue:
+            for user in doc.TAsQueue.all():
                 removed_users_mails.append(user.mail)
-            for user in doc.professorsQueue:
+            for user in doc.professorsQueue.all():
                 removed_users_mails.append(user.mail)
-            for user in doc.visitingProfessorsQueue:
+            for user in doc.visitingProfessorsQueue.all():
                 removed_users_mails.append(user.mail)
-            send_mail(message=message, subject='Outstanding request', from_email=Library.mail, recipient_list=removed_users_mails, auth_user=Library.mail, auth_password=Library.password)
+            if len(removed_users_mails) > 0:
+                send_mail(message=message, subject='Outstanding request', from_email=Library.mail, recipient_list=removed_users_mails, auth_user=Library.mail, auth_password=Library.password)
 
             message = 'Dear user, please return the copy of "' + doc.title + '" immediately due to outstanding request. You have only 1 day to return this document'
             users_with_copy = []
-            for copy in doc.copies:
+            for copy in doc.copies.all():
                 if copy.is_checked_out:
                     users_with_copy.append(copy.user_card.user.mail)
                     copy.overdue_date = datetime.date.today() + datetime.timedelta(days=1)
-            send_mail(message=message, subject='Outstanding request', from_email=Library.mail, recipient_list=users_with_copy, auth_user=Library.mail, auth_password=Library.password)
+                    copy.save()
+            if len(users_with_copy):
+                send_mail(message=message, subject='Outstanding request', from_email=Library.mail, recipient_list=users_with_copy, auth_user=Library.mail, auth_password=Library.password)
         else:
             print("You cannot perform this action")
 
@@ -458,9 +464,14 @@ class Librarian(User):
                     copy.is_checked_out = False
                     copy.user_card = None
                     user.user_card.copies.all().exclude(id=copy.id)
+                    user.save()
                     user.user_card.save()
                     copy.save()
-
+                    copy.booking_date = None
+                    copy.save()
+                    for cop in user.user_card.copies.all():
+                        print("accept_doc does not works")
+                        print(cop)
                     # first = copy.document.first_in_queue()
                     # self.notify(first, copy.document)
                     return True
@@ -524,16 +535,16 @@ class Librarian(User):
             author = Author.objects.create(name=name)
             author.save()
 
-    # def create_book(self, library, is_best_seller, reference, title, price_value, edition, publisher, year):
-    #     if self.level_of_privileges >= 2:
-    #         class_model = ReferenceBook if reference else Book
-    #         model = class_model.objects.create(library=library, title=title, price_value=price_value,
-    #                                            is_best_seller=is_best_seller, edition=edition, publisher=publisher,
-    #                                            year=year)
-    #         model.save()
-    #         return model
-    #     else:
-    #         print("You cannot perform this action")
+    def create_book(self, library, is_best_seller, reference, title, price_value, edition, publisher, year):
+        if self.level_of_privileges >= 2:
+            class_model = ReferenceBook if reference else Book
+            model = class_model.objects.create(library=library, title=title, price_value=price_value,
+                                               is_best_seller=is_best_seller, edition=edition, publisher=publisher,
+                                               year=year)
+            model.save()
+            return model
+        else:
+            print("You cannot perform this action")
 
     def create_book_new(self, library, is_best_seller, reference, title, price_value, edition, publisher, year, authors):
         if self.level_of_privileges >= 2:
@@ -579,10 +590,9 @@ class Librarian(User):
         else:
             print("You cannot perform this action")
 
-    def remove_object(self, class_model, obj):
+    def remove_object(self, obj):
         if self.level_of_privileges == 3:
-            class_model.objects.get(id=obj.id).delete()
-            obj.save()
+            obj.delete()
         else:
             print("You cannot perform this action")
 
@@ -591,11 +601,9 @@ class Librarian(User):
             for copy in document.copies:
                 if not copy.is_checked_out:
                     copy.delete()
-                    copy.save()
                     count -= 1
                     if count == 0:
                         break
-            document.copies.save()
             document.save()
         else:
             print("You cannot perform this action")
@@ -605,18 +613,14 @@ class Librarian(User):
             for copy in document.copies:
                 if not copy.is_checked_out:
                     copy.delete()
-                    copy.save()
-            document.copies.save()
             document.save()
         else:
             print("You cannot perform this action")
 
     def remove_all_copies_without_check(self, document):
-        for copy in document.copies:
+        for copy in document.copies.all():
             if not copy.is_checked_out:
                 copy.delete()
-                copy.save()
-        document.copies.save()
         document.save()
 
     # def patron_information(self, id):
@@ -656,13 +660,14 @@ class Admin(User):
         library_card_number = User.objects.last().user_card.library_card_number + 1
         librarian = Librarian.objects.create(first_name=first_name, second_name=second_name, login=login, password=password,
                                              address=address, phone_number=phone_number, mail=mail, level_of_privileges=level_of_privileges)
-        UserCard.objects.create(user=librarian, library=self.user_card.library,
+        user_card = UserCard.objects.create(user=librarian, library=self.user_card.library,
                                 library_card_number=library_card_number)
+        librarian.save()
+        user_card.save()
         return librarian
 
     def change_level_of_privileges(self, librarian, level_of_privileges):
         librarian.level_of_privileges = level_of_privileges
 
     def delete_librarian(self, librarian):
-        Librarian.objects.get(id=librarian.id).delete()
-        librarian.save()
+        librarian.delete()
