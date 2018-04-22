@@ -115,13 +115,18 @@ def list_of_books(request):
     return render(request, 'library/user_list.html', locals())
 
 
-def librarian_list(request):
-    lib = Document.objects.all()
-    print ('kkk')
-    return render(request, 'library/librarian_list.html', locals())
+def list_of_librarians(request):
+    lib = Librarian.objects.all()
+    return render(request, 'library/list_of_librarians.html', locals())
 
 def starter_page_for_librarian(request):
     return render(request, 'library/starter_page_for_librarian.html', locals())
+
+def starter_page_for_user(request):
+    return render(request, 'library/starter_page_for_user.html', locals())
+
+def starter_page_for_admin(request):
+    return render(request, 'library/starter_page_for_admin.html', locals())
 
 def logined_library(request):
     Doc = Document.objects.all()
