@@ -18,6 +18,7 @@ urlpatterns = [
     url(r'^starter_page_for_admin', views.starter_page_for_admin, name='starter_page_for_admin'),
     url(r'^starter_page_for_user', views.starter_page_for_user, name='starter_page_for_user'),
     url(r'^list_of_librarians', views.list_of_librarians, name='list_of_librarians'),
+    url(r'^admin_add_librarian', views.admin_add_librarian, name='admin_add_librarian'),
     path('users/<int:pk>/', views.user_detail.as_view(), name='user_detail'),
     path('users/<int:pk>/delete_user/', views.librarian_delete_user, name='delete_user'),
 ]

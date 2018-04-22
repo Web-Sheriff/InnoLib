@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseForbidden
 from django.contrib import auth
 from django.template import loader, RequestContext
-from .forms import LoginForm, SignUpForm,BookForm,UserForm
+from .forms import LoginForm, SignUpForm,BookForm,UserForm, LibrarianForm
 from django.http import  HttpResponseRedirect
 from library.models import *
 from django.views.generic import TemplateView
@@ -67,12 +67,22 @@ def librarian_add_user(request):
     if request.method == "POST":
         form = UserForm(request.POST)
         if form.is_valid():
-            post = form.save(commit=True)
-            post.save()
-            return redirect('', pk=post.pk)
+            form.save()
+            return redirect('user_list')
     else:
-        form = User()
+        form = UserForm()
     return render(request, 'library/librarian_add_user.html', {'form': form})
+
+
+def admin_add_librarian(request):
+    if request.method == "POST":
+        form = LibrarianForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('list_of_librarians')
+    else:
+        form = LibrarianForm()
+    return render(request, 'library/admin_add_librarian.html', {'form': form})
 
 
 # def login(request):

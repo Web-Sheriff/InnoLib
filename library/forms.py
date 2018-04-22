@@ -30,17 +30,26 @@ class UserForm(forms.ModelForm):
         exclude = [""]
 
 
-class ProfessorForm(forms.ModelForm):
+class LibrarianForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput)
+
     class Meta:
-        model = Professor
-        fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail')
+        model = Librarian
+        fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail', 'level_of_privileges')
         exclude = [""]
+
+
+#class ProfessorForm(forms.ModelForm):
+ #   class Meta:
+  #      model = Professor
+   #     fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail')
+    #    exclude = [""]
 
 
 class BookForm(forms.ModelForm):
     class Meta:
         model = Book
-        fields = ('library','title', 'price_value', 'authors','is_best_seller', 'edition', 'publisher','year')
+        fields = ('library', 'title', 'price_value', 'is_best_seller', 'edition', 'publisher', 'year','authors')
         exclude = [""]
 
 
