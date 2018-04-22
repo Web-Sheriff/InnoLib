@@ -52,6 +52,16 @@ def librarian_add_book(request):
     return render(request, 'library/librarian_add_book.html', {'form': form})
 
 
+def logined_for_librarian(request):
+    return render(request, 'library/logined_for_librarian.html', locals())
+
+def logined_for_patron(request):
+    return render(request, 'library/logined_for_patron.html', locals())
+
+def logined_for_admin(request):
+    return render(request, 'library/logined_for_admin.html', locals())
+
+
 def signup(request):
     if request.method == "POST":
         form = SignUpForm(request.POST)
@@ -74,18 +84,6 @@ def librarian_add_user(request):
         form = User()
     return render(request, 'library/librarian_add_user.html', {'form': form})
 
-
-# def login(request):
-#     if request.method == "POST":
-#         form = LoginForm(request.POST)
-#         if form.is_valid():
-#             post = form.save(commit=False)
-#             post.save()
-#             return redirect('library/books_for_user.html')
-#     else:
-#         form = LoginForm()
-#     return render(request, 'library/login.html', {'form': form})
-
 def login(request):
     if request.method == "POST":
         form = LoginForm(request.POST)
@@ -96,7 +94,7 @@ def login(request):
                 if post.username == i.login:
                     login_exits = True
                     if post.password == i.password:
-                        return redirect('starter_page_for_user')
+                        return redirect('logined_for_patron')
             if login_exits:
                 return render(request, 'library/not_valid_password.html', {'form': form})
             else:
@@ -118,15 +116,6 @@ def list_of_books(request):
 def list_of_librarians(request):
     lib = Librarian.objects.all()
     return render(request, 'library/list_of_librarians.html', locals())
-
-def starter_page_for_librarian(request):
-    return render(request, 'library/starter_page_for_librarian.html', locals())
-
-def starter_page_for_user(request):
-    return render(request, 'library/starter_page_for_user.html', locals())
-
-def starter_page_for_admin(request):
-    return render(request, 'library/starter_page_for_admin.html', locals())
 
 def logined_library(request):
     Doc = Document.objects.all()

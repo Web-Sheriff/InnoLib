@@ -5,22 +5,15 @@
     <title>Title</title>
 </head>
 <body>
-{% block content %}
-<h1 style="position: fixed; top: 90px; left: 700px;); ">List of Users</h1>
+{{ user_list.as_p }}
+WE DID IT!!!
+{% for i in user_list %}
 
-  <form method="POST" class="list" style="position: fixed; top: 150px; left: 600px; border: #FCA205 5px solid " ;>
-       {% csrf_token %}
-        {{ user_list.as_p }}
-        <table>
-            {% for i in user_list %}
                   <tr class='success'>
+                        <td>{{ i.username }}</td>
                         <td>{{ i.mail }}</td>
-                        <td>{{ i.get.document.title}}</td>
+                        <td>{{ i.user_card.copies.get.document.title}}</td>
                   </tr>
-                <break></break>
-            {% endfor %}
-        </table>
-    </form>
-  {% endblock %}
+{% endfor %}
 </body>
 </html>
