@@ -6,7 +6,7 @@
     </head>
     <body>
         {% block content %}
-        <h1 style="position: fixed; top: 45px; left: 575px; ">Adding a book</h1>
+        <h1 style="position: fixed; top: 45px; left: 575px; ">Adding a journal</h1>
             <form method="POST" class="librarian_add_book" style="position: fixed; top: 100px; left: 550px; border: #FCA205 5px solid " >
                 {% csrf_token %}
             {{ form.as_p }}

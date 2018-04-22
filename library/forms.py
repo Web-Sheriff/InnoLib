@@ -53,6 +53,13 @@ class BookForm(forms.ModelForm):
         exclude = [""]
 
 
+class JournalForm(forms.ModelForm):
+    class Meta:
+        model = Journal
+        fields = ('library', 'title', 'price_value', 'keywords')
+        exclude = [""]
+
+
 class CopyForm(forms.ModelForm):
     class Meta:
         model = Book

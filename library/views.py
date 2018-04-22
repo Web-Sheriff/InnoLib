@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseForbidden
 from django.contrib import auth
 from django.template import loader, RequestContext
-from .forms import LoginForm, SignUpForm,BookForm,UserForm, LibrarianForm
+from .forms import *
 from django.http import  HttpResponseRedirect
 from library.models import *
 # from django.views.generic import TemplateView
@@ -58,6 +58,18 @@ def librarian_add_book(request):
     else:
         form = Book()
     return render(request, 'library/librarian_add_book.html', {'form': form})
+
+
+def librarian_add_journal(request):
+    if request.method == "POST":
+        form = JournalForm(request.POST or None)
+        if form.is_valid():
+            form.save()
+            return redirect('books_for_librarian')
+    else:
+        form = Journal()
+    return render(request, 'library/librarian_add_Journal.html', {'form': form})
+
 
 
 def logined_for_librarian(request,i):
@@ -164,7 +176,7 @@ def list_to_delete(request):
 
 
 def adding_doc_start(request):
-    return render(request, 'adding_doc_start.html', locals())
+    return render(request, 'library/adding_doc_start.html', locals())
 
 
 def librarian_delete_user(request, pk):
