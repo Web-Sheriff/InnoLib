@@ -15,5 +15,4 @@ urlpatterns = [
     url(r'^books_for_user', views.books_for_user, name='books_for_user'),
     path('users/<int:pk>/', views.user_detail.as_view(), name='user_detail'),
     path('users/<int:pk>/delete_user/', views.librarian_delete_user, name='delete_user'),
-    path('accounts/', include('django.contrib.auth.urls'))
 ]
