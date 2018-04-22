@@ -1,7 +1,6 @@
 import datetime
 import re
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db import models
 from django.utils.timezone import now
@@ -72,38 +71,38 @@ class Document(models.Model):
     price_value = models.IntegerField()
     keywords = models.ManyToManyField(Keyword, related_name='documents')
 
-    studentsQueue = models.ManyToManyField("Student", related_name='documents')
-    instructorsQueue = models.ManyToManyField("Instructor", related_name='documents')
-    TAsQueue = models.ManyToManyField("TA", related_name='documents')
-    visitingProfessorsQueue = models.ManyToManyField("VisitingProfessor", related_name='documents')
-    professorsQueue = models.ManyToManyField("Professor", related_name='documents')
+    studentsQueue = models.ManyToManyField("Student", related_name='documents', blank=True)
+    instructorsQueue = models.ManyToManyField("Instructor", related_name='documents', blank=True)
+    TAsQueue = models.ManyToManyField("TA", related_name='documents', blank=True)
+    visitingProfessorsQueue = models.ManyToManyField("VisitingProfessor", related_name='documents', blank=True)
+    professorsQueue = models.ManyToManyField("Professor", related_name='documents', blank=True)
 
     def booking_period(self, user):
         return datetime.timedelta(weeks=2)
 
-    def queue_type(self, doc, user):
+    def queue_type(self, user):
         if isinstance(user, Student):
-            return doc.studentsQueue
+            return self.studentsQueue
         elif isinstance(user, Instructor):
-            return doc.instructorsQueue
+            return self.instructorsQueue
         elif isinstance(user, TA):
-            return doc.TAsQueue
+            return self.TAsQueue
         elif isinstance(user, VisitingProfessor):
-            return doc.visitingProfessorsQueue
+            return self.visitingProfessorsQueue
         else:
-            return doc.professorsQueue
+            return self.professorsQueue
 
-    def first_in_queue(self, doc):
-        if doc.studentsQueue.count() > 0:
-            return doc.studentsQueue.first()
-        elif doc.instructorsQueue.count() > 0:
-            return doc.instructorsQueue.first()
-        elif doc.TAsQueue.count() > 0:
-            return doc.TAsQueue.first()
-        elif doc.visitingProfessorsQueue.count() > 0:
-            return doc.visitingProfessorsQueue.first()
-        elif doc.professorsQueue.count() > 0:
-            return doc.professorsQueue.first()
+    def first_in_queue(self):
+        if self.studentsQueue.count() > 0:
+            return self.studentsQueue.first()
+        elif self.instructorsQueue.count() > 0:
+            return self.instructorsQueue.first()
+        elif self.TAsQueue.count() > 0:
+            return self.TAsQueue.first()
+        elif self.visitingProfessorsQueue.count() > 0:
+            return self.visitingProfessorsQueue.first()
+        elif self.professorsQueue.count() > 0:
+            return self.professorsQueue.first()
         else:
             return False
 
@@ -255,28 +254,6 @@ class UserCard(models.Model):
     library_card_number = models.IntegerField(default=None)
 
 
-''' Special subclass for documents that can be accessible'''
-
-
-# class AvailableDocs(models.Model):
-#     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='available_documents')
-#     document = models.OneToOneField(Document, on_delete=models.DO_NOTHING)
-#     rights_date = models.DateField(now(), null=True, blank=True)
-#
-#     def check_date(self):
-#         if self.rights_date != datetime.date.today():
-#             queue = self.document.queue_type(doc=self.document, user=self.user)
-#             queue.exclude(user_card=self.user.user_card)
-#             queue.model.save()
-#             self.user.available_documents.exclude(document=self.document, user=self.user)
-#             self.user.available_documents.model.save()
-#             if not self.document.has_queue():
-#                 return False
-#             first = Document.first_in_queue(doc=self.document)
-#             first.available_documents.create(document=self.document, user=first)
-#             Librarian.notify(user=first, document=self.document)
-
-
 # there are 3 types of patrons: students, faculties and visiting professors
 '''The main successor of User with clue features for it'''
 
@@ -316,11 +293,11 @@ class Patron(User):
     # check out some copy of the document. If it is not possible returns False
     def check_out_doc(self, document):
         for copy in self.user_card.copies.all():
-            if copy.document == document:
+            if copy.document.id == document.id:
+                print("You cannot got in queue for this book because you're already in")
                 return False  # user has already checked this document
-        queue = document.queue_type(doc=document, user=self)
+        queue = document.queue_type(user=self)
         queue.add(self)
-        queue.model.save()
         return True  # user got into queue
 
     # we cannot return_doc feature because user cannot return it by himself. this action should do the librarian
@@ -404,20 +381,24 @@ class Librarian(User):
     level_of_privileges = models.IntegerField(default=1)
 
     def handle_book(self, user, doc):
-        queue = doc.document.queue_type(doc=doc, user=user)
+        queue = doc.queue_type(user=user)
         if user.id == queue.first().id:
-            for copy in doc.copies:
+            for copy in doc.copies.all():
                 if not copy.is_checked_out:
                     copy.is_checked_out = True
                     user.user_card.copies.add(copy)
                     copy.booking_date = datetime.date.today()
-                    queue.exclude(user_card=user.user_card)
-                    queue.model.save()
+                    for user in queue.all():
+                        print(user.first_name)
+                    queue.all().exclude(id=user.id)
+                    for user in queue.all():
+                        print(user.first_name)
+                    queue.model.save(user)
                     user.user_card.save()
                     user.save()
                     copy.save()
                     return True
-            print("This book have not any copy")
+            print("This book have not any available copy")
             return False
         else:
             print("This user is not first in queue")
@@ -476,7 +457,7 @@ class Librarian(User):
         user.user_card.save()
         copy.save()
 
-        first = Document.first_in_queue(doc=copy.document)
+        first = copy.document.first_in_queue()
         self.notify(first, copy.document)
 
     def accept_doc_after_outstanding_request(self, user, copy):
@@ -522,11 +503,29 @@ class Librarian(User):
                 if copy.if_overdue():
                     card.user.fine += copy.overdue * copy.document.price_value
 
-    def create_book(self, library, is_best_seller, reference, title, price_value, edition, publisher, year):
+    def create_authors(self, list_of_names):
+        if self.level_of_privileges >= 2:
+            list = []
+            for name in list_of_names:
+                author = Author.objects.create(name=name)
+                author.save()
+                list.append(author)
+            return list
+
+    def create_author(self, name):
+        if self.level_of_privileges >= 2:
+            author = Author.objects.create(name=name)
+            author.save()
+
+    def create_book(self, library, is_best_seller, reference, title, price_value, edition, publisher, year, authors):
         if self.level_of_privileges >= 2:
             class_model = ReferenceBook if reference else Book
             model = class_model.objects.create(library=library, title=title, price_value=price_value,
-                                              is_best_seller=is_best_seller, edition=edition, publisher=publisher, year=year)
+                                               is_best_seller=is_best_seller, edition=edition, publisher=publisher,
+                                               year=year)
+            model.save()
+            for author in authors:
+                model.authors.add(author)
             model.save()
             return model
         else:
