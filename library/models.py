@@ -442,7 +442,6 @@ class Librarian(User):
             send_mail(message=message, subject='Outstanding request', from_email=Library.mail, recipient_list=users_with_copy, auth_user=Library.mail, auth_password=Library.password)
         else:
             print("You cannot perform this action")
-        # Допили этот метод
 
     def notify(self, user, document):
         user.available_documents.create(document=document, user=user)
