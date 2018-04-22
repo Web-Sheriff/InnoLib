@@ -11,7 +11,7 @@
       {% csrf_token %}
         <table>
             {% for doc in all_documents %}
-                zzz
+
                     <tr class='success'>
                         <td>{{doc.title}}</td>
                         {% for author in doc.authors.all %}
