@@ -294,9 +294,13 @@ class Patron(User):
     def check_out_doc(self, document):
         for copy in self.user_card.copies.all():
             if copy.document.id == document.id:
-                print("You cannot got in queue for this book because you're already in")
+                print("You cannot got in queue for this document because you're already have a copy of this document")
                 return False  # user has already checked this document
         queue = document.queue_type(user=self)
+        for user in queue.all():
+            if user.id == self.id:
+                print("You cannot got in queue for this document because you're already in this queue")
+                return False
         queue.add(self)
         return True  # user got into queue
 
@@ -388,15 +392,13 @@ class Librarian(User):
                     copy.is_checked_out = True
                     user.user_card.copies.add(copy)
                     copy.booking_date = datetime.date.today()
-                    for user in queue.all():
-                        print(user.first_name)
-                    queue.all().exclude(id=user.id)
-                    for user in queue.all():
-                        print(user.first_name)
+                    queue = queue.all().exclude(id=user.id)
                     queue.model.save(user)
                     user.user_card.save()
                     user.save()
                     copy.save()
+                    for user in queue.all():
+                        print(user.first_name)
                     return True
             print("This book have not any available copy")
             return False
@@ -444,20 +446,26 @@ class Librarian(User):
             print("You cannot perform this action")
 
     def notify(self, user, document):
-        user.available_documents.create(document=document, user=user)
         send_mail(
             message='Dear user, you have 1 day to take a copy of document you queued up for. After the expiration of this period you will lose this opportunity and will be removed from the queue. Good luck. Your InnoLib',
             subject='Waiting notification', from_email=Library.mail, recipient_list=user.mail, auth_user=Library.mail, auth_password=Library.password)
         print("The message with notifying was sent to the email of "+user.first_name+" "+user.second_name+" about "+document.title)
 
-    def accept_doc(self, user, copy):
-        copy.is_checked_out = False
-        user.user_card.copies.exclude(copy)
-        user.user_card.save()
-        copy.save()
+    def accept_doc(self, user, doc):
+        for copy in doc.copies.all():
+            if copy.is_checked_out:
+                if copy.user_card.id == user.user_card.id:
+                    copy.is_checked_out = False
+                    copy.user_card = None
+                    user.user_card.copies.all().exclude(id=copy.id)
+                    user.user_card.save()
+                    copy.save()
 
-        first = copy.document.first_in_queue()
-        self.notify(first, copy.document)
+                    # first = copy.document.first_in_queue()
+                    # self.notify(first, copy.document)
+                    return True
+        print("This user have not any copy of this document")
+        return False
 
     def accept_doc_after_outstanding_request(self, user, copy):
         user.user_card.copies.exclude(copy)
@@ -516,7 +524,18 @@ class Librarian(User):
             author = Author.objects.create(name=name)
             author.save()
 
-    def create_book(self, library, is_best_seller, reference, title, price_value, edition, publisher, year, authors):
+    def create_book(self, library, is_best_seller, reference, title, price_value, edition, publisher, year):
+        if self.level_of_privileges >= 2:
+            class_model = ReferenceBook if reference else Book
+            model = class_model.objects.create(library=library, title=title, price_value=price_value,
+                                               is_best_seller=is_best_seller, edition=edition, publisher=publisher,
+                                               year=year)
+            model.save()
+            return model
+        else:
+            print("You cannot perform this action")
+
+    def create_book_new(self, library, is_best_seller, reference, title, price_value, edition, publisher, year, authors):
         if self.level_of_privileges >= 2:
             class_model = ReferenceBook if reference else Book
             model = class_model.objects.create(library=library, title=title, price_value=price_value,

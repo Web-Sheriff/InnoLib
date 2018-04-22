@@ -55,3 +55,4 @@ class FirstTestCase(TestCase):
     # b2.save()
     s1.check_out_doc(b1)
     librarian.handle_book(s1, b1)
+    librarian.accept_doc(s1, b1)
