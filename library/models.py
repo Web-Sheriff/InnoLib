@@ -524,16 +524,16 @@ class Librarian(User):
             author = Author.objects.create(name=name)
             author.save()
 
-    def create_book(self, library, is_best_seller, reference, title, price_value, edition, publisher, year):
-        if self.level_of_privileges >= 2:
-            class_model = ReferenceBook if reference else Book
-            model = class_model.objects.create(library=library, title=title, price_value=price_value,
-                                               is_best_seller=is_best_seller, edition=edition, publisher=publisher,
-                                               year=year)
-            model.save()
-            return model
-        else:
-            print("You cannot perform this action")
+    # def create_book(self, library, is_best_seller, reference, title, price_value, edition, publisher, year):
+    #     if self.level_of_privileges >= 2:
+    #         class_model = ReferenceBook if reference else Book
+    #         model = class_model.objects.create(library=library, title=title, price_value=price_value,
+    #                                            is_best_seller=is_best_seller, edition=edition, publisher=publisher,
+    #                                            year=year)
+    #         model.save()
+    #         return model
+    #     else:
+    #         print("You cannot perform this action")
 
     def create_book_new(self, library, is_best_seller, reference, title, price_value, edition, publisher, year, authors):
         if self.level_of_privileges >= 2:
