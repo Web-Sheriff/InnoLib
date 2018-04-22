@@ -36,12 +36,23 @@ def books_for_user(request):
     return render(request, 'library/books_for_user.html', locals())
 
 
+def librarian_add_book(request):
+    if request.method == "POST":
+        form = BookForm(request.POST or None)
+        if form.is_valid():
+            form.save()
+            return redirect('books_for_librarian')
+    else:
+        form = Book()
+    return render(request, 'library/librarian_add_book.html', {'form': form})
+
+
 def signup(request):
     if request.method == "POST":
         form = SignUpForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('user_list') # it should be index
+            return redirect('user_list')
     else:
         form = SignUpForm()
     return render(request, 'library/signup.html', {'form': form})
@@ -95,17 +106,6 @@ def list_to_delete(request):
     Doc = Document.objects.all()
     return render(request, 'library/books_for_user.html', locals())
 
-
-def librarian_add_book(request):
-    if request.method == "POST":
-        form = BookForm(request.POST)
-        if form.is_valid():
-            post = form.save(commit=True)
-            post.save()
-            return redirect('books_for_admin', pk=post.pk)
-    else:
-        form = Book()
-    return render(request, 'library/librarian_add_book.html', {'form': form})
 
 
 def librarian_add_user(request):

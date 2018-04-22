@@ -14,6 +14,7 @@ class LoginForm(forms.ModelForm):
 
 class SignUpForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
+
     class Meta:
         model = User
         fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail')
@@ -21,6 +22,8 @@ class SignUpForm(forms.ModelForm):
 
 
 class UserForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput)
+
     class Meta:
         model = User
         fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail')
@@ -44,6 +47,6 @@ class BookForm(forms.ModelForm):
 class CopyForm(forms.ModelForm):
     class Meta:
         model = Book
-        fields = ('library','title', 'price_value', 'is_best_seller', 'edition', 'publisher')
+        fields = ('library','title', 'price_value', 'is_best_seller', 'edition', 'publisher','year')
         exclude = [""]
 
