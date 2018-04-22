@@ -2,17 +2,15 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>login</title>
+        <title>Adding a book</title>
     </head>
-
     <body>
-
-    <!-- For working with form -->
         {% block content %}
-        <h1 style="position: fixed; top: 130px; left: 625px;); ">Adding a book</h1>
-            <form method="ADD A BOOK" class="login" style="position: fixed; top: 200px; left: 550px; border: #FCA205 5px solid " ;>{% csrf_token %}
+        <h1 style="position: fixed; top: 45px; left: 575px;); ">Adding a book</h1>
+            <form method="POST" class="librarian_add_book" style="position: fixed; top: 100px; left: 550px; border: #FCA205 5px solid " >
+                {% csrf_token %}
             {{ form.as_p }}
-		<button type="submit" class="save btn btn-default" style="margin-top: 5px; background: yellow">Add</button>
+		<button type="submit" class="btn btn-default" style="margin-top: 5px; background: yellow"  >Add</button>
 
 
             </form>
