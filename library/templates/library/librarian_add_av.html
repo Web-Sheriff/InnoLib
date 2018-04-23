@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Adding Audio & Video</title>
+    </head>
+    <body>
+        {% block content %}
+        <h1 style="position: fixed; top: 45px; left: 575px; ">Adding Audio & Video</h1>
+            <form method="POST" class="librarian_add_av" style="position: fixed; top: 100px; left: 550px; border: #FCA205 5px solid " >
+                {% csrf_token %}
+            {{ form.as_p }}
+		<button type="submit" class="save btn btn-default" style="margin-top: 5px; background: yellow"  >Add</button>
+
+
+            </form>
+        {% endblock %}
+
+    </body>
+</html>

@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect
 from django.views import generic
 
 from library.models import *
-from .forms import LoginForm, SignUpForm, BookForm, UserForm, LibrarianForm
+from .forms import *
 
 
 class user_list(generic.ListView):
@@ -34,6 +34,28 @@ def books_for_user(request):
     return render(request, 'library/books_for_user.html', locals())
 
 
+def librarian_add_journal(request):
+    if request.method == "POST":
+        form = JournalForm(request.POST or None)
+        if form.is_valid():
+            form.save()
+            return redirect('books_for_librarian')
+    else:
+        form = Journal()
+    return render(request, 'library/librarian_add_journal.html', {'form': form})
+
+
+def librarian_add_av(request):
+    if request.method == "POST":
+        form = AVForm(request.POST or None)
+        if form.is_valid():
+            form.save()
+            return redirect('books_for_librarian')
+    else:
+        form = Journal()
+    return render(request, 'library/librarian_add_av.html', {'form': form})
+
+
 def books_for_librarian(request):
     all_documents = Document.objects.all()
     return render(request, 'library/books_for_user.html', locals())
@@ -48,6 +70,16 @@ def librarian_add_book(request):
     else:
         form = Book()
     return render(request, 'library/librarian_add_book.html', {'form': form})
+
+def librarian_add_copy(request):
+    if request.method == "POST":
+        form = CopyForm(request.POST or None)
+        if form.is_valid():
+            form.save()
+            return redirect('books_for_librarian')
+    else:
+        form = Copy()
+    return render(request, 'library/librarian_add_copy.html', {'form': form})
 
 
 def admin_add_librarian(request):
@@ -70,6 +102,61 @@ def librarian_add_user(request):
     else:
         form = UserForm()
     return render(request, 'library/librarian_add_user.html', {'form': form})
+
+def librarian_add_instructor(request):
+    if request.method == "POST":
+        form = UserForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('user_list')
+    else:
+        form = UserForm()
+    return render(request, 'library/librarian_add_instructor.html', {'form': form})
+
+
+def librarian_add_professor(request):
+    if request.method == "POST":
+        form = UserForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('user_list')
+    else:
+        form = UserForm()
+    return render(request, 'library/librarian_add_professor.html', {'form': form})
+
+
+def librarian_add_visprofessor(request):
+    if request.method == "POST":
+        form = UserForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('user_list')
+    else:
+        form = UserForm()
+    return render(request, 'library/librarian_add_visprofessor.html', {'form': form})
+
+
+
+def librarian_add_ta(request):
+    if request.method == "POST":
+        form = UserForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('user_list')
+    else:
+        form = UserForm()
+    return render(request, 'library/librarian_add_ta.html', {'form': form})
+
+
+def librarian_add_student(request):
+    if request.method == "POST":
+        form = UserForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('user_list')
+    else:
+        form = UserForm()
+    return render(request, 'library/librarian_add_student.html', {'form': form})
 
 
 def find_status(user):
@@ -125,12 +212,12 @@ def login(request):
                     login_exits = True
                     if post.password == i.password:
                         if isinstance(i, Librarian):
-                            return logined_for_librarian(request, i)
+                            return logined_for_librarian
                         elif isinstance(i, Admin):
                             return logined_for_admin(request, i)
                         else:
                             return logined_for_patron(request, i)
-                            return logined_for_librarian(request, i)
+                            #return logined_for_librarian(request, i)
             if login_exits:
                 return render(request, 'library/u_authorization/not_valid_password.html', {'form': form})
             else:
@@ -154,17 +241,6 @@ def list_of_librarians(request):
     return render(request, 'library/list_of_librarians.html', locals())
 
 
-def starter_page_for_librarian(request):
-    return render(request, 'library/starter_page_for_librarian.html', locals())
-
-
-def starter_page_for_user(request):
-    return render(request, 'library/starter_page_for_user.html', locals())
-
-
-def starter_page_for_admin(request):
-    return render(request, 'library/starter_page_for_admin.html', locals())
-
 
 def logined_library(request):
     Doc = Document.objects.all()
@@ -181,3 +257,9 @@ def librarian_delete_user(request, pk):
     user.delete()
     print('\n\n\n')
     return HttpResponseRedirect('/')
+
+def adding_doc_start(request):
+    return render(request, 'library/adding_doc_start.html', locals())
+
+def adding_users_start(request):
+    return render(request, 'library/adding_users_start.html', locals())

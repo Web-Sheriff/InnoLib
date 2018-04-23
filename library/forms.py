@@ -39,17 +39,19 @@ class LibrarianForm(forms.ModelForm):
         exclude = [""]
 
 
-#class ProfessorForm(forms.ModelForm):
- #   class Meta:
-  #      model = Professor
-   #     fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail')
-    #    exclude = [""]
 
 
 class BookForm(forms.ModelForm):
     class Meta:
         model = Book
         fields = ('library', 'title', 'price_value', 'is_best_seller', 'edition', 'publisher', 'year','authors')
+        exclude = [""]
+
+
+class AVForm(forms.ModelForm):
+    class Meta:
+        model = AudioVideo
+        fields = ('library', 'title', 'price_value', 'publisher', 'year','authors')
         exclude = [""]
 
 
@@ -62,7 +64,9 @@ class JournalForm(forms.ModelForm):
 
 class CopyForm(forms.ModelForm):
     class Meta:
-        model = Book
-        fields = ('library','title', 'price_value', 'is_best_seller', 'edition', 'publisher','year')
+        model = Copy
+        fields = ('document','number', 'need_to_return', 'is_checked_out', 'user_card', 'booking_date','overdue_date', 'renew','weeks_renew')
         exclude = [""]
+
+
 
