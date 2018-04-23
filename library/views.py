@@ -10,15 +10,15 @@ from library.models import *
 from django.views import generic
 
 
-class UserListView(generic.ListView):
+class user_list(generic.ListView):
     model = User
 
 
-class LibrarianListView(generic.ListView):
+class librarian_list(generic.ListView):
     model = Librarian
 
 
-class BookListView(generic.ListView):
+class book_list(generic.ListView):
     model = Book
 
 
@@ -52,15 +52,31 @@ def librarian_add_book(request):
     return render(request, 'library/librarian_add_book.html', {'form': form})
 
 
-def logined_for_librarian(request, i):
-    return render(request, 'library/u_authorization/logined_for_librarian.html', locals())
+def find_status(user):
+    status = 'User'
+    if isinstance(user,Student):
+        status = 'Student'
+    elif isinstance(user,Instructor):
+        status = 'Instructor'
+    elif isinstance(user, TA):
+        status = 'TA'
+    elif isinstance(user, Professor):
+        status = 'Professor'
+    elif isinstance(user,VisitingProfessor):
+        status = 'Visiting Professor'
+    return status
 
 
-def logined_for_patron(request, i):
+def logined_for_patron(request, patron):
+    status = find_status(patron)
     return render(request, 'library/u_authorization/logined_for_patron.html', locals())
 
 
-def logined_for_admin(request, i):
+def logined_for_librarian(request, user):
+    return render(request, 'library/u_authorization/logined_for_librarian.html', locals())
+
+
+def logined_for_admin(request, user):
     return render(request, 'library/u_authorization/logined_for_admin.html', locals())
 
 
@@ -96,17 +112,6 @@ def librarian_add_user(request):
         form = UserForm()
     return render(request, 'library/librarian_add_user.html', {'form': form})
 
-
-# def login(request):
-#     if request.method == "POST":
-#         form = LoginForm(request.POST)
-#         if form.is_valid():
-#             post = form.save(commit=False)
-#             post.save()
-#             return redirect('library/books_for_user.html')
-#     else:
-#         form = LoginForm()
-#     return render(request, 'library/login.html', {'form': form})
 
 def login(request):
     if request.method == "POST":

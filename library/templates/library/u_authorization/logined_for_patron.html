@@ -6,22 +6,78 @@
 </head>
 <body>
 {% block content %}
-<h1 style="position: fixed; top: 90px; left: 700px;); ">List of Books</h1>
 
-  <form method="POST" class="list" style="position: fixed; top: 150px; left: 600px; border: #FCA205 5px solid " >
-       {% csrf_token %}
-        {{ user_list.as_p }}
+    <form method="POST" class="list" style="position: fixed; top: 150px; left: 600px; border: #FCA205 5px solid ">
+        {% csrf_token %}
+        {{ patron.as_p }}
+        <style>
+            h1 {
+                font-family: 'Merriweather', serif;
+                font-size: 20px;
+                letter-spacing: 1px;
+                max-width: 320px;
+                width: 100%;
+                position: relative;
+                display: inline-block;
+                color: green;
+                left: 625px;
+                top: 20px;
+                position: fixed;
+            }
+
+            h2 {
+                font-family: 'Merriweather', serif;
+                font-size: 20px;
+                letter-spacing: 1px;
+                max-width: 320px;
+                width: 100%;
+                position: relative;
+                display: inline-block;
+                color: green;
+                left: 625px;
+                top: 80px;
+                position: fixed;
+            }
+        </style>
+        <h1>Welcome to your account, {{ patron.first_name }} {{ patron.second_name }}!</h1>
+        <h2> Your personal information:</h2>
+
+        <style>
+            table {
+                width: 100%; /* Ширина таблицы */
+                background: white; /* Цвет фона таблицы */
+                color: rebeccapurple; /* Цвет текста */
+                border-spacing: 10px; /* Расстояние между ячейками */
+            }
+
+            td, th {
+                background: gold; /* Цвет фона ячеек */
+                padding: 10px; /* Поля вокруг текста */
+            }
+        </style>
         <table>
-            {% for i in user_list %}
-                  <tr class='success'>
-                        <td>{{ i.mail }}</td>
-                        <td>{{ i.get.document.title}}</td>
-                  </tr>
-                <break></break>
-            {% endfor %}
-        </table>
+            <table border="1">
+                <tr>
+                    <th>Your login: {{ patron.login }}</th>
+                </tr>
+                <tr>
+                    <td>Your mail: {{ patron.mail }}</td>
+                </tr>
+                <tr>
+                    <th>Your status: {{ status }}</th>
+                </tr>
+                <tr>
+                    <th>Your phone number: {{ patron.phone_number }}</th>
+                </tr>
+                <tr>
+                    <th>Your adress: {{ patron.address }}</th>
+                </tr>
+{#                <tr>#}
+{#                    <th>Ячейка 4</th>#}
+{#                </tr>#}
+            </table>
     </form>
-  {% endblock %}
+{% endblock %}
 </body>
 </html>
 
