@@ -266,29 +266,40 @@ class Patron(User):
         # queue.model.save()
         pass
 
-    # search for the documents using string
-    def search_doc(self, string):
-        d1 = self.search_doc_author(string)
-        d2 = self.search_doc_title(string)
-        d3 = self.search_doc_keywords(string)
-        d4 = d1 | d2 | d3
-        return d4.distinct()
+    def search_by_availability(self):  # this search returns all documents which have at least one available copy.
+        documents = Document.objects.all().filter(copies__is_checked_out=False)
+        list_of_ids = [documents.first().id]
+        docs = documents[1:]
+        i = 0
+        for doc in docs:
+            if doc.id != list_of_ids[i]:
+                list_of_ids.append(doc.id)
+                i += 1
+        return Document.objects.all().filter(id__in=list_of_ids)
 
-    # search for the documents using string, which is the name of the author
-    def search_doc_author(self, name):
-        documents = self.user_card.library.documents.filter(authors__name__contains=name).distinct()
-        return documents
+    def search_by_title(self, title):  # this search returns all documents which titles contains 'title'.
+        # For example, if document have title 'Test', search by 'te' will return this document too.
+        return Document.objects.all().filter(title__icontains=title)
 
-    # search for the documents using string, which is the title
-    def search_doc_title(self, name):
-        documents = self.user_card.library.documents.filter(title__contains=name).distinct()
-        return documents
+    def search_by_author(self, author):  # this search returns all documents which authors names contains 'author'.
+        # For example, if document have authors 'Tolkien' and 'Rowling', search by 'tolk' will return this document too.
+        return Document.objects.all().filter(authors__name__icontains=author)
 
-    # search for the documents using string, which contains keywords
-    def search_doc_keywords(self, string):
-        words = re.split('[ ,.+;:]+', string)
-        documents = self.user_card.library.documents.filter(keywords__word__in=words).distinct()
-        return documents
+    def search_by_title_available(self, title):  # this search returns all available documents which titles contains 'title'.
+        # For example, if document have title 'Test' and at least one available copy, search by 'te' will return this document too.
+        return self.search_by_availability().filter(title__icontains=title)
+
+    def search_by_author_available(self, author):  # this search returns all available documents which authors names contains 'author'.
+        # For example, if document have authors 'Tolkien' and 'Rowling' and at least one available copy, search by 'tolk' will return this document too.
+        return self.search_by_availability().filter(authors__name__icontains=author)
+
+    def search_by_author_and_title(self, title, author):  # this search returns all documents which authors names contains 'author' and titles contains 'title'.
+        # For example, if document have title 'Test' and authors 'Tolkien' and 'Rowling', search by 'te', 'tolk' will return this document too.
+        return Document.objects.all().filter(authors__name__icontains=author).filter(title__icontains=title)
+
+    def search_by_author_and_title_available(self, author, title):  # this search returns all available documents which authors names contains 'author' and titles contains 'title'.
+        # For example, if document have title 'Test' and authors 'Tolkien' and 'Rowling' and at least one available copy, search by 'te', 'tolk' will return this document too.
+        return self.search_by_availability().filter(authors__name__icontains=author).filter(title__icontains=title)
 
     # check out some copy of the document. If it is not possible returns False
     def check_out_doc(self, document):
@@ -386,25 +397,29 @@ class Librarian(User):
 
     def handle_book(self, user, doc):
         queue = doc.queue_type(user=user)
-        if user.id == queue.first().id:
-            for copy in doc.copies.all():
-                if not copy.is_checked_out:
-                    copy.is_checked_out = True
-                    user.user_card.copies.add(copy)
-                    copy.booking_date = datetime.date.today()
-                    for us in queue.all():
-                        print(us)
-                    queue.remove(user)
-                    doc.save()
-                    user.user_card.save()
-                    user.save()
-                    copy.save()
-                    for us in queue.all():
-                        print("Handle book does not works")
-                        print(us)
-                    return True
-            print("This book have not any available copy")
-            return False
+        if queue.all().count() > 0:
+            if user.id == queue.first().id:
+                for copy in doc.copies.all():
+                    if not copy.is_checked_out:
+                        copy.is_checked_out = True
+                        user.user_card.copies.add(copy)
+                        copy.booking_date = datetime.date.today()
+                        for us in queue.all():
+                            print(us)
+                        queue.remove(user)
+                        doc.save()
+                        user.user_card.save()
+                        user.save()
+                        copy.save()
+                        for us in queue.all():
+                            print("Handle book does not works")
+                            print(us)
+                        return True
+                print("This book have not any available copy")
+                return False
+            else:
+                print("This user is not first in queue")
+                return False
         else:
             print("This user is not first in queue")
             return False
@@ -441,11 +456,10 @@ class Librarian(User):
 
             message = 'Dear user, please return the copy of "' + doc.title + '" immediately due to outstanding request. You have only 1 day to return this document'
             users_with_copy = []
-            for copy in doc.copies.all():
-                if copy.is_checked_out:
-                    users_with_copy.append(copy.user_card.user.mail)
-                    copy.overdue_date = datetime.date.today() + datetime.timedelta(days=1)
-                    copy.save()
+            for copy in doc.copies.all():  # we are do not checking copy for is_checked_out because all checked out copies already deleted
+                users_with_copy.append(copy.user_card.user.mail)
+                copy.overdue_date = datetime.date.today() + datetime.timedelta(days=1)
+                copy.save()
             if len(users_with_copy):
                 send_mail(message=message, subject='Outstanding request', from_email=Library.mail, recipient_list=users_with_copy, auth_user=Library.mail, auth_password=Library.password)
         else:
