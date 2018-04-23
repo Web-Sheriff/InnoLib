@@ -19,6 +19,27 @@ class Library(models.Model):
     mail = models.EmailField(default='InnoLib@yandex.ru', max_length=64)
     password = models.CharField(default='InnoTest', max_length=32)
 
+    def is_admin_exists(self):
+        if Admin.objects.first() is None:
+            return False
+        return True
+
+    def create_admin(self):
+        logging.info("Library trying to create an admin")
+        if not self.is_admin_exists():
+            admin = Admin.objects.create(login='admin', password='adminadmin', mail='test@yandex.ru',
+                                         first_name='Vyacheslav', second_name='Vasilev', address='Innopolis',
+                                         phone_number='88005553535')
+            user_card = UserCard.objects.create(user=admin, library=self, library_card_number=0)
+            self.is_admin_exists = True
+            user_card.save()
+            admin.save()
+            self.save()
+            logging.info("Library created an admin")
+            return Admin
+        logging.info("Library tried to create an admin, but admin already exists")
+        return False
+
     def count_unchecked_copies(self, doc):
         return len(doc.copies.filter(is_checked_out=False))
 
@@ -249,8 +270,8 @@ class User(models.Model):
     fine = models.IntegerField(default=0, null=True)
 
     @staticmethod
-    def u_is_instance(user,Class):
-        return isinstance(user,Class)
+    def u_is_instance(user, Class):
+        return isinstance(user, Class)
 
     ''' UserCard class as contact information which librarian deals with'''
 
@@ -576,6 +597,15 @@ class Librarian(User):
                 if copy.if_overdue():
                     card.user.fine += copy.overdue * copy.document.price_value
 
+    def create_keywords(self, list_of_keywords):
+        if self.level_of_privileges >= 2:
+            list = []
+            for word in list_of_keywords:
+                keyword = Keyword.objects.create(word=word)
+                keyword.save()
+                list.append(keyword)
+            return list
+
     def create_authors(self, list_of_names):
         logging.info("Librarian " + self.first_name + self.second_name + " trying to create an authors " + list_of_names)
         if self.level_of_privileges >= 2:
@@ -610,7 +640,7 @@ class Librarian(User):
         logging.info("Librarian " + self.first_name + self.second_name + " tried to create a book" + title + ", but he have not enough level of privileges")
         # print("You cannot perform this action")
 
-    def create_book_new(self, library, is_best_seller, reference, title, price_value, edition, publisher, year, authors):
+    def create_book_new(self, library, is_best_seller, reference, title, price_value, edition, publisher, year, authors, keywords):
         logging.info("Librarian " + self.first_name + self.second_name + " trying to create a book " + title)
         if self.level_of_privileges >= 2:
             class_model = ReferenceBook if reference else Book
@@ -621,12 +651,39 @@ class Librarian(User):
             for author in authors:
                 model.authors.add(author)
             model.save()
+            for keyword in keywords:
+                model.keywords.add(keyword)
+            model.save()
+            logging.info("Librarian " + self.first_name + self.second_name + " created a book " + title)
+            return model
+        logging.info("Librarian " + self.first_name + self.second_name + " tried to create a book" + title + ", but he have not enough level of privileges")
+        # print("You cannot perform this action")
+
+    def create_book_with_authors_names(self, library, is_best_seller, reference, title, price_value, edition, publisher, year, authors, keywords):
+        logging.info("Librarian " + self.first_name + self.second_name + " trying to create a book " + title)
+        if self.level_of_privileges >= 2:
+            class_model = ReferenceBook if reference else Book
+            model = class_model.objects.create(library=library, title=title, price_value=price_value,
+                                               is_best_seller=is_best_seller, edition=edition, publisher=publisher,
+                                               year=year)
+            model.save()
+            auth = self.create_authors(authors)
+            for author in auth:
+                model.authors.add(author)
+            model.save()
+            key = self.create_keywords(keywords)
+            for keyword in key:
+                model.keywords.add(keyword)
+            model.save()
             logging.info("Librarian " + self.first_name + self.second_name + " created a book " + title)
             return model
         logging.info("Librarian " + self.first_name + self.second_name + " tried to create a book" + title + ", but he have not enough level of privileges")
         # print("You cannot perform this action")
 
     def create_copies(self, document, number):
+        if document is None:
+            logging.info("Librarian " + self.first_name + self.second_name + " tried to create copies of uncreated document")
+            return False
         logging.info("Librarian " + self.first_name + self.second_name + " trying to create " + str(number) + " copies of document " + document.title)
         if self.level_of_privileges >= 2:
             for i in range(number):
@@ -651,6 +708,21 @@ class Librarian(User):
         logging.info("Librarian " + self.first_name + self.second_name + " trying to create user " + first_name + second_name)
         if self.level_of_privileges >= 2:
             library_card_number = User.objects.last().user_card.library_card_number + 1
+            user = class_model.objects.create(login=login,
+                                              password=password, first_name=first_name,
+                                              second_name=second_name, address=address,
+                                              phone_number=phone_number, mail=mail)
+            user_card = UserCard.objects.create(user=user, library_card_number=library_card_number, library=self.user_card.library)
+            user.save()
+            user_card.save()
+            logging.info("Librarian " + self.first_name + self.second_name + " created user " + first_name + second_name)
+            return user
+        logging.info("Librarian " + self.first_name + self.second_name + " tried to create user " + first_name + second_name + ", but he have not enough level of privileges")
+        # print("You cannot perform this action")
+
+    def create_user_with_library_card_number(self, class_model, first_name, second_name, login, password, address, phone_number, mail, library_card_number):
+        logging.info("Librarian " + self.first_name + self.second_name + " trying to create user " + first_name + second_name)
+        if self.level_of_privileges >= 2:
             user = class_model.objects.create(login=login,
                                               password=password, first_name=first_name,
                                               second_name=second_name, address=address,
@@ -759,8 +831,7 @@ class Admin(User):
         library_card_number = User.objects.last().user_card.library_card_number + 1
         librarian = Librarian.objects.create(first_name=first_name, second_name=second_name, login=login, password=password,
                                              address=address, phone_number=phone_number, mail=mail, level_of_privileges=level_of_privileges)
-        user_card = UserCard.objects.create(user=librarian, library=self.user_card.library,
-                                library_card_number=library_card_number)
+        user_card = UserCard.objects.create(user=librarian, library=self.user_card.library, library_card_number=library_card_number)
         librarian.save()
         user_card.save()
         logging.info("Admin " + self.first_name + self.second_name + " added librarian" + first_name + second_name)
