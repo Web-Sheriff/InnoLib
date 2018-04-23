@@ -246,11 +246,25 @@ class User(models.Model):
     second_name = models.CharField(max_length=64)
     address = models.CharField(max_length=256)
     phone_number = models.CharField(max_length=16)
+    status = models.CharField(max_length=32)
     fine = models.IntegerField(default=0, null=True)
 
     @staticmethod
     def u_is_instance(user,Class):
         return isinstance(user,Class)
+    @staticmethod
+    def find_status(user):
+        return str(type(user))
+        if isinstance(user, Student):
+            return 'Student'
+        if isinstance(user, Instructor):
+            return 'Instructor'
+        if isinstance(user, TA):
+            return 'TA'
+        if isinstance(user, Professor):
+            return 'Professor'
+        if isinstance(user, VisitingProfessor):
+            return 'Visiting Professor'
 
     ''' UserCard class as contact information which librarian deals with'''
 
