@@ -1,6 +1,7 @@
 from django import forms
-from .models import *
+from django.forms import SelectDateWidget
 
+from .models import *
 
 class LoginForm(forms.ModelForm):
     username = forms.CharField(widget=forms.TextInput())
@@ -12,11 +13,70 @@ class LoginForm(forms.ModelForm):
         exclude = [""]
 
 
+# class SignUpForm(forms.ModelForm):
+#     password = forms.CharField(widget=forms.PasswordInput)
+#
+#     class Meta:
+#         model = User
+#         fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail')
+#         exclude = [""]
+
+# class SignUpForm(forms.ModelForm):
+#     password = forms.CharField(widget=forms.PasswordInput)
+#
+#     class Meta:
+#         model = User
+#         fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail')
+#         exclude = [""]
 class SignUpForm(forms.ModelForm):
+    # status = forms.CharField(widget=forms.PasswordInput)
+    class Meta:
+        model = User
+        fields = ('status',)
+        exclude = [""]
+
+
+class SignUpStudent(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
 
     class Meta:
-        model = User
+        model = Student
+        fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail')
+        exclude = [""]
+
+
+class SignUpProfessor(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput)
+
+    class Meta:
+        model = Professor
+        fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail')
+        exclude = [""]
+
+
+class SignUpVisitingProfessor(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput)
+
+    class Meta:
+        model = VisitingProfessor
+        fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail')
+        exclude = [""]
+
+
+class SignUpInstructor(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput)
+
+    class Meta:
+        model = Instructor
+        fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail')
+        exclude = [""]
+
+
+class SignUpTA(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput)
+
+    class Meta:
+        model = TA
         fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail')
         exclude = [""]
 
@@ -35,21 +95,22 @@ class LibrarianForm(forms.ModelForm):
 
     class Meta:
         model = Librarian
-        fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail', 'level_of_privileges')
+        fields = (
+            'login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail', 'level_of_privileges')
         exclude = [""]
 
 
-#class ProfessorForm(forms.ModelForm):
- #   class Meta:
-  #      model = Professor
-   #     fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail')
-    #    exclude = [""]
+# class ProfessorForm(forms.ModelForm):
+#   class Meta:
+#      model = Professor
+#     fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail')
+#    exclude = [""]
 
 
 class BookForm(forms.ModelForm):
     class Meta:
         model = Book
-        fields = ('library', 'title', 'price_value', 'is_best_seller', 'edition', 'publisher', 'year','authors')
+        fields = ('library', 'title', 'price_value', 'is_best_seller', 'edition', 'publisher', 'year', 'authors')
         exclude = [""]
 
 
@@ -63,6 +124,5 @@ class JournalForm(forms.ModelForm):
 class CopyForm(forms.ModelForm):
     class Meta:
         model = Book
-        fields = ('library','title', 'price_value', 'is_best_seller', 'edition', 'publisher','year')
+        fields = ('library', 'title', 'price_value', 'is_best_seller', 'edition', 'publisher', 'year')
         exclude = [""]
-

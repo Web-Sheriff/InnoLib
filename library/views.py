@@ -4,8 +4,8 @@ from django.shortcuts import render, redirect
 # Create your views here.
 from django.views import generic
 
-from library.models import *
-from .forms import LoginForm, SignUpForm, BookForm, UserForm, LibrarianForm
+# from .forms import LoginForm, SignUpForm, BookForm, UserForm, LibrarianForm
+from .forms import *
 
 
 class user_list(generic.ListView):
@@ -86,7 +86,7 @@ def find_status(user):
 
 
 def logined_for_patron(request, patron):
-    status = find_status(patron)
+    status = User.find_status(patron)
     copies_list = patron.user_card.copies.all()
     return render(request, 'library/u_authorization/logined_for_patron.html', locals())
 
@@ -103,14 +103,113 @@ def logined_for_admin(request, user):
     return render(request, 'library/u_authorization/logined_for_admin.html', locals())
 
 
+# def signup(request):
+#     if request.method == "POST":
+#         form = SignUpForm(request.POST)
+#         if form.is_valid():
+#             form.save()
+#             return redirect('user_list')
+#     else:
+#         form = SignUpForm()
+#     return render(request, 'library/u_authorization/signup.html', {'form': form})
+
+# def signup_not_valid(request):
+#     if request.method == "POST":
+#         form = SignUpForm(request.POST)
+#         if form.is_valid():
+#             post = form
+#             if post.status == 'Student' or post.status == 'student':
+#                 return signup_student(request)
+#             elif post.status == 'Professor' or post.status == 'professor':
+#                 return signup_professor(request)
+#             elif post.status == 'Visiting Professor' or post.status == 'visiting professor' or \
+#                     post.status == 'visiting Professor' or post.status == 'Visiting professor':
+#                 return signup_visiting_professor(request)
+#             elif post.status == 'Instructor' or post.status == 'instructor':
+#                 return signup_instructor(request)
+#             elif post.status == 'ta' or post.status == 'TA' or post.status == 'Ta' or post.status == 'tA':
+#                 return signup_ta(request)
+#             else:
+#                 return signup_not_valid(request)
+#     else:
+#         form = SignUpForm()
+#     return render(request, 'library/u_authorization/signup_not_valid.html', {'form': form})
+
+
 def signup(request):
     if request.method == "POST":
         form = SignUpForm(request.POST)
         if form.is_valid():
+            if form.status == 'Student' or form.status == 'student':
+                return signup_student(request)
+            elif form.status == 'Professor' or form.status == 'professor':
+                return signup_professor(request)
+            elif form.status == 'Visiting Professor' or form.status == 'visiting professor' or \
+                    form.status == 'visiting Professor' or form.status == 'Visiting professor':
+                return signup_visiting_professor(request)
+            elif form.status == 'Instructor' or form.status == 'instructor':
+                return signup_instructor(request)
+            elif form.status == 'ta' or form.status == 'TA' or form.status == 'Ta' or form.status == 'tA':
+                return signup_ta(request)
+            else:
+                return render(request, 'library/u_authorization/signup_not_valid.html', {'form': form})
+    else:
+        form = SignUpForm()
+    return render(request, 'library/u_authorization/signup.html', {'form': form})
+
+
+def signup_student(request):
+    if request.method == "POST":
+        form = SignUpStudent(request.POST)
+        if form.is_valid():
             form.save()
             return redirect('user_list')
     else:
-        form = SignUpForm()
+        form = SignUpStudent()
+    return render(request, 'library/u_authorization/signup.html', {'form': form})
+
+
+def signup_professor(request):
+    if request.method == "POST":
+        form = SignUpProfessor(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('user_list')
+    else:
+        form = SignUpStudent()
+    return render(request, 'library/u_authorization/signup.html', {'form': form})
+
+
+def signup_instructor(request):
+    if request.method == "POST":
+        form = SignUpInstructor(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('user_list')
+    else:
+        form = SignUpInstructor()
+    return render(request, 'library/u_authorization/signup.html', {'form': form})
+
+
+def signup_visiting_professor(request):
+    if request.method == "POST":
+        form = SignUpVisitingProfessor(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('user_list')
+    else:
+        form = SignUpVisitingProfessor()
+    return render(request, 'library/u_authorization/signup.html', {'form': form})
+
+
+def signup_ta(request):
+    if request.method == "POST":
+        form = SignUpTA(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('user_list')
+    else:
+        form = SignUpTA()
     return render(request, 'library/u_authorization/signup.html', {'form': form})
 
 
