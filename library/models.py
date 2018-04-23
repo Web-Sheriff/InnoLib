@@ -244,8 +244,11 @@ class User(models.Model):
     phone_number = models.CharField(max_length=16)
     fine = models.IntegerField(default=0, null=True)
 
+    @staticmethod
+    def u_is_instance(user,Class):
+        return isinstance(user,Class)
 
-''' UserCard class as contact information which librarian deals with'''
+    ''' UserCard class as contact information which librarian deals with'''
 
 
 class UserCard(models.Model):

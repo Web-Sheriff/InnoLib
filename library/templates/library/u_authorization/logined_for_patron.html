@@ -48,6 +48,7 @@
                 background: white; /* Цвет фона таблицы */
                 color: rebeccapurple; /* Цвет текста */
                 border-spacing: 10px; /* Расстояние между ячейками */
+                margin: auto;
             }
 
             td, th {
@@ -55,27 +56,45 @@
                 padding: 10px; /* Поля вокруг текста */
             }
         </style>
-        <table>
-            <table border="1">
-                <tr>
-                    <th>Your login: {{ patron.login }}</th>
-                </tr>
-                <tr>
-                    <td>Your mail: {{ patron.mail }}</td>
-                </tr>
-                <tr>
-                    <th>Your status: {{ status }}</th>
-                </tr>
-                <tr>
-                    <th>Your phone number: {{ patron.phone_number }}</th>
-                </tr>
-                <tr>
-                    <th>Your adress: {{ patron.address }}</th>
-                </tr>
-{#                <tr>#}
-{#                    <th>Ячейка 4</th>#}
-{#                </tr>#}
-            </table>
+        <table border="1">
+            <tr>
+                <th>CONTACT</th>
+            </tr>
+            <tr>
+                <th>Your login: {{ patron.login }}</th>
+            </tr>
+            <tr>
+                <th>Your mail: {{ patron.mail }}</th>
+            </tr>
+            <tr>
+                <th>Your status: {{ status }}</th>
+            </tr>
+            <tr>
+                <th>Your phone number: {{ patron.phone_number }}</th>
+            </tr>
+            <tr>
+                <th>Your adress: {{ patron.address }}</th>
+            </tr>
+            {#                <tr>#}
+            {#                    <th>Ячейка 4</th>#}
+            {#                </tr>#}
+        </table>
+
+        {% for i in copies_list %}
+            <tr class='success'>
+
+                <td>{{ i }}</td>
+                <td>Hui tebe</td>
+                <td>{{ i }}</td>
+                <td>{{ i }}</td>
+            </tr>
+        {% endfor %}
+        <button type="button" onclick="window.location.href='http://127.0.0.1:8000'"
+                style="margin-left 15px; background: royalblue; color: ghostwhite;"> Check out the book
+        </button>
+        <button type="button" onclick="window.location.href='http://127.0.0.1:8000/innolib'"
+                style="margin-left 15px; background: royalblue; color: ghostwhite;"> Log out
+        </button>
     </form>
 {% endblock %}
 </body>
