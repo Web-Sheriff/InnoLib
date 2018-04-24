@@ -335,6 +335,19 @@ class Patron(User):
         logging.info("Patron " + self.first_name + " " + self.second_name + " found documents by author " + author)
         return res
 
+    def search_by_keywords(self, keywords):  # this search returns all documents which keywords contains keywords from 'keywords'.
+        # For example, if document have keywords 'key, word', search by 'key' will return this document too.
+        keywords_str = ''
+        for keyword in keywords:
+            keywords_str += keyword.word
+            keywords_str += ', '
+        keywords_str = keywords_str[:-2]
+        keywords_str += '.'
+        logging.info("Patron " + self.first_name + " " + self.second_name + " trying to search documents by keywords: " + keywords_str)
+        res = Document.objects.all().filter(keywords__in=keywords)
+        logging.info("Patron " + self.first_name + " " + self.second_name + " found documents by keywords: " + keywords_str)
+        return res
+
     def search_by_title_available(self, title):  # this search returns all available documents which titles contains 'title'.
         # For example, if document have title 'Test' and at least one available copy, search by 'te' will return this document too.
         logging.info("Patron " + self.first_name + " " + self.second_name + " trying to search available documents by title " + title)
@@ -618,16 +631,16 @@ class Librarian(User):
                 if copy.if_overdue():
                     card.user.fine += copy.overdue * copy.document.price_value
 
-    def create_keywords(self, list_of_keywords):
+    def get_or_create_keywords(self, list_of_keywords):
         if self.level_of_privileges >= 2:
             list = []
             for word in list_of_keywords:
-                keyword = Keyword.objects.create(word=word)
-                keyword.save()
-                list.append(keyword)
+                keyword = Keyword.objects.get_or_create(word=word)
+                keyword[0].save()
+                list.append(keyword[0])
             return list
 
-    def create_authors(self, list_of_names):
+    def get_or_create_authors(self, list_of_names):
         names = list_of_names[0]
         for i in range(1, len(list_of_names)):
             names += ', '
@@ -636,9 +649,9 @@ class Librarian(User):
         if self.level_of_privileges >= 2:
             list = []
             for name in list_of_names:
-                author = Author.objects.create(name=name)
-                author.save()
-                list.append(author)
+                author = Author.objects.get_or_create(name=name)
+                author[0].save()
+                list.append(author[0])
             logging.info("Librarian " + self.first_name + " " + self.second_name + " created an authors: " + names)
             return list
         logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create an authors: " + names + ", but he have not enough level of privileges")
@@ -695,11 +708,11 @@ class Librarian(User):
                                                is_best_seller=is_best_seller, edition=edition, publisher=publisher,
                                                year=year)
             model.save()
-            auth = self.create_authors(authors)
+            auth = self.get_or_create_authors(authors)
             for author in auth:
                 model.authors.add(author)
             model.save()
-            key = self.create_keywords(keywords)
+            key = self.get_or_create_keywords(keywords)
             for keyword in key:
                 model.keywords.add(keyword)
             model.save()

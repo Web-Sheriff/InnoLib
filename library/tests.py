@@ -3,6 +3,14 @@
 from library.models import *
 
 
+'''
+TestCase Settings:
+    set_up - library and admin creating
+    bd_clear - database cleaning
+    kwargs - predefined dictionaries whose keys becoming arguments while objects creating
+'''
+
+
 class TestCaseSettings:
     @staticmethod
     def set_up():
@@ -15,17 +23,17 @@ class TestCaseSettings:
 
     @staticmethod
     def bd_clear():
-        # Library.objects.all().delete()
-        # User.objects.all().delete()
-        # Document.objects.all().delete()
-        # Author.objects.all().delete()
-        # Editor.objects.all().delete()
-        # Issue.objects.all().delete()
-        # Journal.objects.all().delete()
-        # Keyword.objects.all().delete()
-        # Login.objects.all().delete()
+        Library.objects.all().delete()
+        User.objects.all().delete()
+        Document.objects.all().delete()
+        Author.objects.all().delete()
+        Editor.objects.all().delete()
+        Issue.objects.all().delete()
+        Journal.objects.all().delete()
+        Keyword.objects.all().delete()
+        Login.objects.all().delete()
 
-    '''kwargs for users and documents creating'''
+    'kwargs for users and documents creating'
 
     d1_authors_names = ["Thomas H. Cormen", "Charles E. Leiserson", "Ronald L. Rivest", "Clifford Stein"]
     d2_authors_names = ["Niklaus Wirth"]
@@ -72,7 +80,11 @@ class TestCaseSettings:
                  "login": "lib3", "password": "qwe12345", "address": "K. Marks Street, 4", "phone_number": "30008",
                  "mail": "natalya_tupikina@gmail.com", "level_of_privileges": 3}
 
-    '''Test Cases'''
+
+'''Test Cases'''
+
+
+'First Test Case'
 
 
 class FirstTestCase:
@@ -90,6 +102,9 @@ class FirstTestCase:
         TestCaseSettings.bd_clear()
 
 
+'Second Test Case'
+
+
 class SecondTestCase:
     @staticmethod
     def set_up():
@@ -105,6 +120,9 @@ class SecondTestCase:
     @staticmethod
     def bd_clear():
         TestCaseSettings.bd_clear()
+
+
+'Third Test Case'
 
 
 class ThirdTestCase:
@@ -130,6 +148,9 @@ class ThirdTestCase:
     @staticmethod
     def bd_clear():
         TestCaseSettings.bd_clear()
+
+
+'Fourth Test Case'
 
 
 class FourthTestCase:
@@ -163,6 +184,9 @@ class FourthTestCase:
         TestCaseSettings.bd_clear()
 
 
+'Fifth Test Case'
+
+
 class FifthTestCase:
     @staticmethod
     def set_up():
@@ -182,6 +206,9 @@ class FifthTestCase:
     @staticmethod
     def bd_clear():
         TestCaseSettings.bd_clear()
+
+
+'Sixth Test Case'
 
 
 class SixthTestCase:
@@ -218,6 +245,9 @@ class SixthTestCase:
         TestCaseSettings.bd_clear()
 
 
+'Seventh Test Case'
+
+
 class SeventhTestCase:
     @staticmethod
     def set_up():
@@ -252,6 +282,9 @@ class SeventhTestCase:
         TestCaseSettings.bd_clear()
 
 
+'Eighth Test Case'
+
+
 class EighthTestCase:
     @staticmethod
     def set_up():
@@ -261,11 +294,14 @@ class EighthTestCase:
     @staticmethod
     def test_case():
         admin1 = Admin.objects.first()
-        admin1
+        # admin1.
 
     @staticmethod
     def bd_clear():
         TestCaseSettings.bd_clear()
+
+
+'Ninth Test Case'
 
 
 class NinthTestCase:
@@ -276,11 +312,15 @@ class NinthTestCase:
 
     @staticmethod
     def test_case():
-        pass
+        admin1 = Admin.objects.first()
+        # admin1.
 
     @staticmethod
     def bd_clear():
         TestCaseSettings.bd_clear()
+
+
+'Tenth Test Case'
 
 
 class TenthTestCase:
@@ -291,11 +331,20 @@ class TenthTestCase:
 
     @staticmethod
     def test_case():
-        pass
+        v = VisitingProfessor.objects.get(login='visit1')
+        search_res = v.search_by_title('Introduction to Algorithms')
+
+        counter = 1
+        for res in search_res:
+            print(str(counter) + '. ' + res.title + ' by ' + res.authors.first().name + '.')
+            counter += 1
 
     @staticmethod
     def bd_clear():
         TestCaseSettings.bd_clear()
+
+
+'Eleventh Test Case'
 
 
 class EleventhTestCase:
@@ -306,11 +355,20 @@ class EleventhTestCase:
 
     @staticmethod
     def test_case():
-        pass
+        v = VisitingProfessor.objects.get(login='visit1')
+        search_res = v.search_by_title('Algorithms')
+
+        counter = 1
+        for res in search_res:
+            print(str(counter) + '. ' + res.title + ' by ' + res.authors.first().name + '.')
+            counter += 1
 
     @staticmethod
     def bd_clear():
         TestCaseSettings.bd_clear()
+
+
+'Twelfth Test Case'
 
 
 class TwelfthTestCase:
@@ -321,11 +379,21 @@ class TwelfthTestCase:
 
     @staticmethod
     def test_case():
-        pass
+        v = VisitingProfessor.objects.get(login='visit1')
+        keywords = Keyword.objects.filter(word='Algorithms')
+        search_res = v.search_by_keywords(keywords)
+
+        counter = 1
+        for res in search_res:
+            print(str(counter) + '. ' + res.title + ' by ' + res.authors.first().name)
+            counter += 1
 
     @staticmethod
     def bd_clear():
         TestCaseSettings.bd_clear()
+
+
+'Thirteenth Test Case'
 
 
 class ThirteenthTestCase:
@@ -343,6 +411,9 @@ class ThirteenthTestCase:
         TestCaseSettings.bd_clear()
 
 
+'Fourteenth Test Case'
+
+
 class FourteenthTestCase:
     @staticmethod
     def set_up():
@@ -358,88 +429,113 @@ class FourteenthTestCase:
         TestCaseSettings.bd_clear()
 
 
+'''
+Test Cases initializations
+'''
+
+
+'First Test Case initialization'
+
 # TestCaseSettings.bd_clear()
 # FirstTestCase.set_up()
 # FirstTestCase.test_case()
 # FirstTestCase.bd_clear()
-#
-#
+
+'Second Test Case initialization'
+
 # TestCaseSettings.bd_clear()
 # SecondTestCase.set_up()
 # SecondTestCase.test_case()
 # SecondTestCase.bd_clear()
-#
-#
+
+'Third Test Case initialization'
+
 # TestCaseSettings.bd_clear()
 # ThirdTestCase.set_up()
 # ThirdTestCase.test_case()
 # ThirdTestCase.bd_clear()
-#
-#
+
+'Fourth Test Case initialization'
+
 # TestCaseSettings.bd_clear()
 # FourthTestCase.set_up()
 # FourthTestCase.test_case()
 # FourthTestCase.bd_clear()
-#
-#
+
+'Fifth Test Case initialization'
+
 # TestCaseSettings.bd_clear()
 # FifthTestCase.set_up()
 # FifthTestCase.test_case()
 # FifthTestCase.bd_clear()
 
+'Sixth Test Case initialization'
 
 # TestCaseSettings.bd_clear()
 # SixthTestCase.set_up()
 # SixthTestCase.test_case()
 # SixthTestCase.bd_clear()
 
+'Seventh Test Case initialization'
 
 # TestCaseSettings.bd_clear()
 # SeventhTestCase.set_up()
 # SeventhTestCase.test_case()
 # SeventhTestCase.bd_clear()
 
+'Eighth Test Case initialization'
 
 # TestCaseSettings.bd_clear()
 # EighthTestCase.set_up()
 # EighthTestCase.test_case()
 # EighthTestCase.bd_clear()
 
+'Ninth Test Case initialization'
 
 # TestCaseSettings.bd_clear()
 # NinthTestCase.set_up()
 # NinthTestCase.test_case()
 # NinthTestCase.bd_clear()
 
+'Tenth Test Case initialization'
 
 # TestCaseSettings.bd_clear()
 # TenthTestCase.set_up()
 # TenthTestCase.test_case()
 # TenthTestCase.bd_clear()
 
+'Eleventh Test Case initialization'
 
 # TestCaseSettings.bd_clear()
 # EleventhTestCase.set_up()
 # EleventhTestCase.test_case()
 # EleventhTestCase.bd_clear()
 
+'Twelfth Test Case initialization'
 
 # TestCaseSettings.bd_clear()
 # TwelfthTestCase.set_up()
 # TwelfthTestCase.test_case()
 # TwelfthTestCase.bd_clear()
 
+'Thirteenth Test Case initialization'
 
 # TestCaseSettings.bd_clear()
 # ThirteenthTestCase.set_up()
 # ThirteenthTestCase.test_case()
 # ThirteenthTestCase.bd_clear()
 
+'Fourteenth Test Case initialization'
 
 # TestCaseSettings.bd_clear()
 # FourteenthTestCase.set_up()
 # FourteenthTestCase.test_case()
 # FourteenthTestCase.bd_clear()
+
+
+'''
+Old tests for out project written by ourselves to test various features
+'''
 
 
 # class TestTestCase(TestCase):
