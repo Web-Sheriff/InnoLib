@@ -29,7 +29,7 @@ class Library(models.Model):
         if not self.is_admin_exists():
             admin = Admin.objects.create(login='admin', password='adminadmin', mail='test@yandex.ru',
                                          first_name='Vyacheslav', second_name='Vasilev', address='Innopolis',
-                                         phone_number='88005553535')
+                                         phone_number='88005553535', status='Admin')
             user_card = UserCard.objects.create(user=admin, library=self, library_card_number=0)
             self.is_admin_exists = True
             user_card.save()
@@ -307,73 +307,110 @@ class Patron(User):
         # queue.model.save()
         logging.info("Patron " + self.first_name + " " + self.second_name + " renewed the copy of document")
 
-    def search_by_availability(self):  # this search returns all documents which have at least one available copy.
+    def search_by_availability(self):  # this search returns all documents which has at least one available copy.
         logging.info("Patron " + self.first_name + self.second_name + " trying to search documents by availability")
         documents = Document.objects.all().filter(copies__is_checked_out=False)
-        list_of_ids = [documents.first().id]
+        results_id = [documents.first().id]
         docs = documents[1:]
         i = 0
         for doc in docs:
-            if doc.id != list_of_ids[i]:
-                list_of_ids.append(doc.id)
+            if doc.id != results_id[i]:
+                results_id.append(doc.id)
                 i += 1
-        res = Document.objects.all().filter(id__in=list_of_ids)
-        logging.info("Patron " + self.first_name + " " + self.second_name + " found documents by availability ")
+        res = Document.objects.all().filter(id__in=results_id)
+        logging.info("Patron " + self.first_name + " " + self.second_name + " found " + str(res.count()) + " documents by availability ")
         return res
 
     def search_by_title(self, title):  # this search returns all documents which titles contains 'title'.
-        # For example, if document have title 'Test', search by 'te' will return this document too.
+        # For example, if document has title 'Test', search by 'te' will return this document too.
         logging.info("Patron " + self.first_name + " " + self.second_name + " trying to search documents by title " + title)
         res = Document.objects.all().filter(title__icontains=title)
-        logging.info("Patron " + self.first_name + " " + self.second_name + " found documents by title " + title)
+        logging.info("Patron " + self.first_name + " " + self.second_name + " found " + str(res.count()) + " documents by title " + title)
+        return res
+
+    def search_by_titles_and(self, titles):  # this search returns all documents which titles contains words from 'titles'.
+        # For example, if document has title 'Test', search by ['tes', 'est'] will return this document too.
+        titles_str = ''
+        for title in titles:
+            titles_str += title
+            titles_str += ' and '
+        titles_str = titles_str[:-5]
+        titles_str += '.'
+
+        logging.info("Patron " + self.first_name + " " + self.second_name + " trying to search documents by title " + titles_str)
+        res = Document.objects.all()
+        for title in titles:
+            res = res.filter(title__icontains=title)
+        logging.info("Patron " + self.first_name + " " + self.second_name + " found documents " + str(res.count()) + " by title " + titles_str)
+        return res
+
+    def search_by_titles_or(self, titles):  # this search returns all documents which titles contains at least one word from 'titles'.
+        # For example, if document has title 'Test', search by ['tes', 'just'] will return this document too.
+        titles_str = ''
+        for title in titles:
+            titles_str += title
+            titles_str += ' or '
+        titles_str = titles_str[:-4]
+        titles_str += '.'
+
+        logging.info("Patron " + self.first_name + " " + self.second_name + " trying to search documents by title " + titles_str)
+        results_id = []
+        for title in titles:
+            res = Document.objects.all().filter(title__icontains=title)
+            for result in res:
+                results_id.append(result.id)
+        results_id = list(set(results_id))
+        res = Document.objects.all().filter(id__in=results_id)
+        logging.info("Patron " + self.first_name + " " + self.second_name + " found documents " + str(res.count()) + " by title " + titles_str)
         return res
 
     def search_by_author(self, author):  # this search returns all documents which authors names contains 'author'.
-        # For example, if document have authors 'Tolkien' and 'Rowling', search by 'tolk' will return this document too.
+        # For example, if document has authors 'Tolkien' and 'Rowling', search by 'tolk' will return this document too.
         logging.info("Patron " + self.first_name + " " + self.second_name + " trying to search documents by author " + author)
         res = Document.objects.all().filter(authors__name__icontains=author)
-        logging.info("Patron " + self.first_name + " " + self.second_name + " found documents by author " + author)
+        logging.info("Patron " + self.first_name + " " + self.second_name + " found " + str(res.count()) + " documents by author " + author)
         return res
 
     def search_by_keywords(self, keywords):  # this search returns all documents which keywords contains keywords from 'keywords'.
-        # For example, if document have keywords 'key, word', search by 'key' will return this document too.
+        # For example, if document has keywords 'key, word', search by 'key' will return this document too.
         keywords_str = ''
         for keyword in keywords:
             keywords_str += keyword.word
             keywords_str += ', '
         keywords_str = keywords_str[:-2]
         keywords_str += '.'
+
         logging.info("Patron " + self.first_name + " " + self.second_name + " trying to search documents by keywords: " + keywords_str)
         res = Document.objects.all().filter(keywords__in=keywords)
-        logging.info("Patron " + self.first_name + " " + self.second_name + " found documents by keywords: " + keywords_str)
+        logging.info("Patron " + self.first_name + " " + self.second_name + " found " + str(res.count()) + " documents by keywords: " + keywords_str)
         return res
 
     def search_by_title_available(self, title):  # this search returns all available documents which titles contains 'title'.
-        # For example, if document have title 'Test' and at least one available copy, search by 'te' will return this document too.
+        # For example, if document has title 'Test' and at least one available copy, search by 'te' will return this document too.
         logging.info("Patron " + self.first_name + " " + self.second_name + " trying to search available documents by title " + title)
         res = self.search_by_availability().filter(title__icontains=title)
-        logging.info("Patron " + self.first_name + " " + self.second_name + " found available documents by title " + title)
+        logging.info("Patron " + self.first_name + " " + self.second_name + " found " + str(res.count()) + " available documents by title " + title)
         return res
 
     def search_by_author_available(self, author):  # this search returns all available documents which authors names contains 'author'.
-        # For example, if document have authors 'Tolkien' and 'Rowling' and at least one available copy, search by 'tolk' will return this document too.
+        # For example, if document has authors 'Tolkien' and 'Rowling' and at least one available copy, search by 'tolk' will return this document too.
         logging.info("Patron " + self.first_name + " " + self.second_name + " trying to search available documents by author " + author)
         res = self.search_by_availability().filter(authors__name__icontains=author)
-        logging.info("Patron " + self.first_name + " " + self.second_name + " found available documents by author " + author)
+        logging.info("Patron " + self.first_name + " " + self.second_name + " found " + str(res.count()) + " available documents by author " + author)
         return res
 
     def search_by_author_and_title(self, title, author):  # this search returns all documents which authors names contains 'author' and titles contains 'title'.
-        # For example, if document have title 'Test' and authors 'Tolkien' and 'Rowling', search by 'te', 'tolk' will return this document too.
+        # For example, if document has title 'Test' and authors 'Tolkien' and 'Rowling', search by 'te', 'tolk' will return this document too.
         logging.info("Patron " + self.first_name + " " + self.second_name + " trying to search documents by author " + author + " and title " + title)
         res = Document.objects.all().filter(authors__name__icontains=author).filter(title__icontains=title)
-        logging.info("Patron " + self.first_name + " " + self.second_name + " found documents by author " + author + " and title " + title)
+        logging.info("Patron " + self.first_name + " " + self.second_name + " found " + str(res.count()) + " documents by author " + author + " and title " + title)
         return res
 
     def search_by_author_and_title_available(self, author, title):  # this search returns all available documents which authors names contains 'author' and titles contains 'title'.
-        # For example, if document have title 'Test' and authors 'Tolkien' and 'Rowling' and at least one available copy, search by 'te', 'tolk' will return this document too.
+        # For example, if document has title 'Test' and authors 'Tolkien' and 'Rowling' and at least one available copy, search by 'te', 'tolk' will return this document too.
         logging.info("Patron " + self.first_name + " " + self.second_name + " trying to search available documents by author " + author + " and title " + title)
         res = self.search_by_availability().filter(authors__name__icontains=author).filter(title__icontains=title)
-        logging.info("Patron " + self.first_name + " " + self.second_name + " found available documents by author " + author + " and title " + title)
+        logging.info("Patron " + self.first_name + " " + self.second_name + " found " + str(res.count()) + " available documents by author " + author + " and title " + title)
         return res
 
     # patron cannot check out some copy of the document by himself, so he is just trying to got in queue. If it is not possible returns False
@@ -382,7 +419,7 @@ class Patron(User):
         for copy in self.user_card.copies.all():
             if copy.document.id == document.id:
                 # print("You cannot got in queue for this document because you're already have a copy of this document")
-                logging.info("Patron " + self.first_name + " " + self.second_name + " cannot got in queue because he is already have a copy of this document")
+                logging.info("Patron " + self.first_name + " " + self.second_name + " cannot got in queue because he is already has a copy of this document")
                 return False  # user has already checked this document
         queue = document.queue_type(user=self)
         for user in queue.all():
@@ -391,6 +428,7 @@ class Patron(User):
                 logging.info("Patron " + self.first_name + " " + self.second_name + " cannot got in queue because he is already in this queue")
                 return False
         queue.add(self)
+        logging.info("Patron " + self.first_name + " " + self.second_name + " got in queue for the document " + document.title)
         return True  # user got into queue
 
     # we cannot return_doc feature because user cannot return it by himself. this action should do the librarian
@@ -493,8 +531,8 @@ class Librarian(User):
                         copy.save()
                         logging.info("Librarian " + self.first_name + " " + self.second_name + " handled a copy of document " + doc.title + " to patron " + user.first_name + " " + user.second_name)
                         return True
-                # print("This book have not any available copy")
-                logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to handle a copy of document " + doc.title + " to patron " + user.first_name + " " + user.second_name + ", but this document have not any available copy")
+                # print("This book has not any available copy")
+                logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to handle a copy of document " + doc.title + " to patron " + user.first_name + " " + user.second_name + ", but this document has not any available copy")
                 return False
             else:
                 logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to handle a copy of document " + doc.title + " to patron " + user.first_name + " " + user.second_name + ", but this patron not first in queue")
@@ -516,11 +554,19 @@ class Librarian(User):
             delta = datetime.timedelta(days=weeks // 7)
             renew.overdue_date += delta
 
+    def check_information_of_the_system(self):
+        logging.info("Librarian " + self.first_name + " " + self.second_name + " trying to check the information of the system")
+        if self.level_of_privileges >= 1:
+            # implementation of checking the information of the system maybe will be here (i don't know what this feature should do, because we have not defined technical task for this feature)
+            logging.info("Librarian " + self.first_name + " " + self.second_name + " checked the information of the system")
+        else:
+            logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to check the information of the system, but he has not enough level of privileges")
+
+
     def outstanding_request(self, doc):
         logging.info("Librarian " + self.first_name + " " + self.second_name + " trying to create an outstanding request for the document " + doc.title)
         if self.level_of_privileges >= 2:
             self.remove_all_copies_without_check(doc)
-
             message = 'Dear user, sorry but you have been removed from the queue on document "' + doc.title + '" due to an outstanding request'
             removed_users_mails = []
             for user in doc.studentsQueue.all():
@@ -553,7 +599,7 @@ class Librarian(User):
                 # send_mail(message=message, subject='Outstanding request', from_email=library.mail, recipient_list=users_with_copy, auth_user=library.mail, auth_password=library.password)
                 logging.info("Librarian " + self.first_name + " " + self.second_name + " notified the patrons who should to immediately return the document " + doc.title + " due to an outstanding request")
         else:
-            logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create an outstanding request for the document " + doc.title + ", but he have not enough level of privileges")
+            logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create an outstanding request for the document " + doc.title + ", but he has not enough level of privileges")
             # print("You cannot perform this action")
 
     def notify(self, user, document):
@@ -580,10 +626,10 @@ class Librarian(User):
                     logging.info("Librarian " + self.first_name + " " + self.second_name + " accepted the copy of document " + doc.title + " from patron " + user.first_name + " " + user.second_name)
                     # first = copy.document.first_in_queue()
                     # self.notify(first, copy.document)
-                    # logging.info("Librarian " + self.first_name + " " + self.second_name + " notified the patron " + user.first_name + " " + user.second_name + " that now he is first in queue for the document " + doc.title)
+                    logging.info("Librarian " + self.first_name + " " + self.second_name + " notified the patron " + user.first_name + " " + user.second_name + " that now he is first in queue for the document " + doc.title)
                     return True
-        logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to accept the copy of document " + doc.title + " from patron " + user.first_name + " " + user.second_name + ", but he have not any copy of this document")
-        # print("This user have not any copy of this document")
+        logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to accept the copy of document " + doc.title + " from patron " + user.first_name + " " + user.second_name + ", but he has not any copy of this document")
+        # print("This user has not any copy of this document")
         return False
 
     def accept_doc_after_outstanding_request(self, user, copy):
@@ -654,7 +700,7 @@ class Librarian(User):
                 list.append(author[0])
             logging.info("Librarian " + self.first_name + " " + self.second_name + " created an authors: " + names)
             return list
-        logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create an authors: " + names + ", but he have not enough level of privileges")
+        logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create an authors: " + names + ", but he has not enough level of privileges")
 
     def create_author(self, name):
         logging.info("Librarian " + self.first_name + " " + self.second_name + " trying to create an author " + name)
@@ -663,7 +709,7 @@ class Librarian(User):
             author.save()
             logging.info("Librarian " + self.first_name + " " + self.second_name + " created an author " + name)
             return author
-        logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create an author " + name + ", but he have not enough level of privileges")
+        logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create an author " + name + ", but he has not enough level of privileges")
 
     def create_book(self, is_best_seller, reference, title, price_value, edition, publisher, year):
         logging.info("Librarian " + self.first_name + " " + self.second_name + " trying to create a book " + title)
@@ -676,7 +722,7 @@ class Librarian(User):
             model.save()
             logging.info("Librarian " + self.first_name + " " + self.second_name + " created a book " + title)
             return model
-        logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create a book" + title + ", but he have not enough level of privileges")
+        logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create a book" + title + ", but he has not enough level of privileges")
         # print("You cannot perform this action")
 
     def create_book_new(self, is_best_seller, reference, title, price_value, edition, publisher, year, authors, keywords):
@@ -696,7 +742,7 @@ class Librarian(User):
             model.save()
             logging.info("Librarian " + self.first_name + " " + self.second_name + " created a book " + title)
             return model
-        logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create a book" + title + ", but he have not enough level of privileges")
+        logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create a book" + title + ", but he has not enough level of privileges")
         # print("You cannot perform this action")
 
     def create_book_with_authors_names(self, is_best_seller, reference, title, price_value, edition, publisher, year, authors, keywords):
@@ -718,7 +764,7 @@ class Librarian(User):
             model.save()
             logging.info("Librarian " + self.first_name + " " + self.second_name + " created a book " + title)
             return model
-        logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create a book" + title + ", but he have not enough level of privileges")
+        logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create a book" + title + ", but he has not enough level of privileges")
         # print("You cannot perform this action")
 
     def create_copies(self, document, number):
@@ -730,9 +776,9 @@ class Librarian(User):
             for i in range(number):
                 copy = Copy.objects.create(document=document, number=number)
                 copy.save()
-                logging.info("Librarian " + self.first_name + " " + self.second_name + " created " + str(number) + " copies of document " + document.title)
+            logging.info("Librarian " + self.first_name + " " + self.second_name + " created " + str(number) + " copies of document " + document.title)
             return True
-        logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create " + str(number) + " copies of document " + document.title + ", but he have not enough level of privileges")
+        logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create " + str(number) + " copies of document " + document.title + ", but he has not enough level of privileges")
         # print("You cannot perform this action")
 
     def create_av(self, title, publisher, year, price_value):
@@ -743,7 +789,7 @@ class Librarian(User):
             av.save()
             logging.info("Librarian " + self.first_name + " " + self.second_name + " created AV " + title)
             return av
-        logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create AV " + title + ", but he have not enough level of privileges")
+        logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create AV " + title + ", but he has not enough level of privileges")
         # print("You cannot perform this action")
 
     def create_user(self, class_model, first_name, second_name, login, password, address, phone_number, mail):
@@ -773,7 +819,7 @@ class Librarian(User):
             user_card.save()
             logging.info("Librarian " + self.first_name + " " + self.second_name + " created user " + first_name + " " + second_name)
             return user
-        logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create user " + first_name + " " + second_name + ", but he have not enough level of privileges")
+        logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create user " + first_name + " " + second_name + ", but he has not enough level of privileges")
         # print("You cannot perform this action")
 
     def create_user_with_library_card_number(self, class_model, first_name, second_name, login, password, address, phone_number, mail, library_card_number):
@@ -802,7 +848,7 @@ class Librarian(User):
             user_card.save()
             logging.info("Librarian " + self.first_name + " " + self.second_name + " created " + status + " " + first_name + " " + second_name)
             return user
-        logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create " + status + " " + first_name + " " + second_name + ", but he have not enough level of privileges")
+        logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create " + status + " " + first_name + " " + second_name + ", but he has not enough level of privileges")
         # print("You cannot perform this action")
 
     def remove_object(self, obj):
@@ -824,15 +870,15 @@ class Librarian(User):
             return True
 
         if isinstance(obj, User):
-            logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to remove user " + obj.first_name + " " + obj.second_name + ", but he have not enough level of privileges")
+            logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to remove user " + obj.first_name + " " + obj.second_name + ", but he has not enough level of privileges")
         elif isinstance(obj, Document):
-            logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to remove document " + obj.title + ", but he have not enough level of privileges")
+            logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to remove document " + obj.title + ", but he has not enough level of privileges")
 
     def remove_copies(self, document, count):
-        logging.info("Librarian " + self.first_name + " " + self.second_name + " trying to remove " + str(count) + " copies of document" + document.title)
+        logging.info("Librarian " + self.first_name + " " + self.second_name + " trying to remove " + str(count) + " copies of document " + document.title)
         if self.level_of_privileges == 3:
             if count > document.copies.count():
-                logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to remove " + str(count) + " copies of document" + document.title + ", but this document have not so much copies")
+                logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to remove " + str(count) + " copies of document " + document.title + ", but this document has not so much copies")
                 return False
             amount = count
             for copy in document.copies.all():
@@ -846,30 +892,30 @@ class Librarian(User):
                 copy.number -= count
                 copy.save()
             document.save()
-            logging.info("Librarian " + self.first_name + " " + self.second_name + " removed " + str(count) + " copies of document" + document.title)
+            logging.info("Librarian " + self.first_name + " " + self.second_name + " removed " + str(count) + " copies of document " + document.title)
             return True
-        logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to remove " + str(count) + " copies of document" + document.title + ", but he have not enough level of privileges")
+        logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to remove " + str(count) + " copies of document " + document.title + ", but he has not enough level of privileges")
         # print("You cannot perform this action")
 
     def remove_all_copies(self, document):
-        logging.info("Librarian " + self.first_name + " " + self.second_name + " trying to remove all copies of document" + document.title)
+        logging.info("Librarian " + self.first_name + " " + self.second_name + " trying to remove all copies of document " + document.title)
         if self.level_of_privileges == 3:
             for copy in document.copies.all():
                 if not copy.is_checked_out:
                     copy.delete()
             document.save()
-            logging.info("Librarian " + self.first_name + " " + self.second_name + " removed all copies of document" + document.title)
+            logging.info("Librarian " + self.first_name + " " + self.second_name + " removed all copies of document " + document.title)
             return True
-        logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to remove all copies of document" + document.title + ", but he have not enough level of privileges")
+        logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to remove all copies of document " + document.title + ", but he has not enough level of privileges")
         # print("You cannot perform this action")
 
     def remove_all_copies_without_check(self, document):
-        logging.info("Librarian " + self.first_name + " " + self.second_name + " trying to remove all copies of document" + document.title + " without check")
+        logging.info("Librarian " + self.first_name + " " + self.second_name + " trying to remove all copies of document " + document.title + " without check")
         for copy in document.copies.all():
             if not copy.is_checked_out:
                 copy.delete()
         document.save()
-        logging.info("Librarian " + self.first_name + " " + self.second_name + " removed all copies of document" + document.title + " without check")
+        logging.info("Librarian " + self.first_name + " " + self.second_name + " removed all copies of document " + document.title + " without check")
 
     # def patron_information(self, id):
     #     try:
@@ -905,22 +951,34 @@ class Librarian(User):
 class Admin(User):
 
     def add_librarian(self, first_name, second_name, login, password, address, phone_number, mail, level_of_privileges):
-        logging.info("Admin " + self.first_name + " " + self.second_name + " trying to add librarian" + first_name + " " + second_name)
+        logging.info("Admin " + self.first_name + " " + self.second_name + " trying to add librarian " + first_name + " " + second_name)
         library_card_number = User.objects.last().user_card.library_card_number + 1
         librarian = Librarian.objects.create(first_name=first_name, second_name=second_name, login=login, password=password,
                                              address=address, phone_number=phone_number, mail=mail, level_of_privileges=level_of_privileges, status='Librarian')
         user_card = UserCard.objects.create(user=librarian, library=self.user_card.library, library_card_number=library_card_number)
         librarian.save()
         user_card.save()
-        logging.info("Admin " + self.first_name + " " + self.second_name + " added librarian" + first_name + " " + second_name)
+        logging.info("Admin " + self.first_name + " " + self.second_name + " added librarian " + first_name + " " + second_name)
         return librarian
 
     def change_level_of_privileges(self, librarian, level_of_privileges):
-        logging.info("Admin " + self.first_name + " " + self.second_name + " trying to change level of privileges of librarian" + librarian.first_name + " " + librarian.second_name)
+        logging.info("Admin " + self.first_name + " " + self.second_name + " trying to change level of privileges of librarian " + librarian.first_name + " " + librarian.second_name)
         librarian.level_of_privileges = level_of_privileges
-        logging.info("Admin " + self.first_name + " " + self.second_name + " changed level of privileges of librarian" + librarian.first_name + " " + librarian.second_name)
+        logging.info("Admin " + self.first_name + " " + self.second_name + " changed level of privileges of librarian " + librarian.first_name + " " + librarian.second_name)
 
     def delete_librarian(self, librarian):
-        logging.info("Admin " + self.first_name + " " + self.second_name + " trying to delete librarian" + librarian.first_name + " " + librarian.second_name)
+        logging.info("Admin " + self.first_name + " " + self.second_name + " trying to delete librarian " + librarian.first_name + " " + librarian.second_name)
         librarian.delete()
-        logging.info("Admin " + self.first_name + " " + self.second_name + " deleted librarian" + librarian.first_name + " " + librarian.second_name)
+        logging.info("Admin " + self.first_name + " " + self.second_name + " deleted librarian " + librarian.first_name + " " + librarian.second_name)
+
+    def check_logs(self):
+        return open("InnoLib.log", "r").read()
+
+    def check_logs_for_tests(self, string):
+        logs = open("InnoLib.log", "r")
+        for line in logs:
+            if line.endswith(string, 50, -1):
+                break
+        for line in logs:
+            print(line)
+
