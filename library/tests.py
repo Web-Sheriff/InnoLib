@@ -15,17 +15,15 @@ class TestCaseSettings:
 
     @staticmethod
     def bd_clear():
+        Library.objects.all().delete()
         User.objects.all().delete()
         Document.objects.all().delete()
-        Copy.objects.all().delete()
         Author.objects.all().delete()
         Editor.objects.all().delete()
         Issue.objects.all().delete()
         Journal.objects.all().delete()
         Keyword.objects.all().delete()
         Login.objects.all().delete()
-        UserCard.objects.all().delete()
-        Library.objects.all().delete()
 
     '''kwargs for users and documents creating'''
 
@@ -39,13 +37,13 @@ class TestCaseSettings:
 
     d1_kwargs = {"is_best_seller": False, "reference": False, "title": "Introduction to Algorithms",
                  "price_value": 5000, "edition": "Third edition", "publisher": "MIT Press",
-                 "year": 2009, "authors": d1_authors_names, "keywords": d1_keywords_words, "library": Library.objects.first()}
+                 "year": '2009', "authors": d1_authors_names, "keywords": d1_keywords_words}
     d2_kwargs = {"is_best_seller": False, "reference": False, "title": "Algorithms + Data Structures = Programs",
                  "price_value": 5000, "edition": "First edition", "publisher": "Prentice Hall PTR",
-                 "year": 1978, "authors": d2_authors_names, "keywords": d2_keywords_words, "library": Library.objects.first()}
+                 "year": '1978', "authors": d2_authors_names, "keywords": d2_keywords_words}
     d3_kwargs = {"is_best_seller": False, "reference": False, "title": "The Art of Computer Programming",
                  "price_value": 5000, "edition": "Third edition", "publisher": "Addison Wesley Longman Publishing Co., Inc.",
-                 "year": 1997, "authors": d3_authors_names, "keywords": d3_keywords_words, "library": Library.objects.first()}
+                 "year": '1997', "authors": d3_authors_names, "keywords": d3_keywords_words}
 
     p1_kwargs = {"class_model": Professor, "first_name": "Sergey", "second_name": "Afonso",
                  "login": "prof1", "password": "123qwe", "address": "Via Margutta, 3", "phone_number": "30001",
@@ -64,14 +62,14 @@ class TestCaseSettings:
                 "login": "visit1", "password": "12345qwe", "address": "Street Atocha, 27",
                 "phone_number": "30005", "mail": "veronika_rama@gmail.com", "library_card_number": 1110}
 
-    l1_kwargs = {"first_name": "Anton", "second_name": "Khvorov",
-                 "login": "lib1", "password": "123qwerty", "address": "Virtual, r", "phone_number": "30006",
+    l1_kwargs = {"first_name": "Eugenia", "second_name": "Rama",
+                 "login": "lib1", "password": "123qwerty", "address": "Naberezhnochelninskiy Avenue, 7", "phone_number": "30006",
                  "mail": "anton_khvorov@gmail.com", "level_of_privileges": 1}
-    l2_kwargs = {"first_name": "Alexander", "second_name": "Gruk",
-                 "login": "lib2", "password": "qwerty123", "address": "Universitetskaya, 1", "phone_number": "30007",
+    l2_kwargs = {"first_name": "Luie", "second_name": "Ramos",
+                 "login": "lib2", "password": "qwerty123", "address": "Universitetskaya Street, 1", "phone_number": "30007",
                  "mail": "alexander_gruk@gmail.com", "level_of_privileges": 2}
-    l3_kwargs = {"first_name": "Natalya", "second_name": "Tupikina",
-                 "login": "lib3", "password": "qwe12345", "address": "Universitetskaya, 1", "phone_number": "30008",
+    l3_kwargs = {"first_name": "Ramon", "second_name": "Valdez",
+                 "login": "lib3", "password": "qwe12345", "address": "K. Marks Street, 4", "phone_number": "30008",
                  "mail": "natalya_tupikina@gmail.com", "level_of_privileges": 3}
 
     '''Test Cases'''
@@ -117,7 +115,7 @@ class ThirdTestCase:
 
     @staticmethod
     def test_case():
-        l1 = Librarian.objects.first()
+        l1 = Librarian.objects.get(login='lib1')
 
         d1 = l1.create_book_with_authors_names(**TestCaseSettings.d1_kwargs)
         d2 = l1.create_book_with_authors_names(**TestCaseSettings.d2_kwargs)
@@ -127,7 +125,7 @@ class ThirdTestCase:
         l1.create_copies(document=d2, number=3)
         l1.create_copies(document=d3, number=3)
 
-        # checks the information of the system. I dunno what is it, but we need this feature (i will implement this later)
+        # l1 checks the information of the system. I dunno what is it, but we need this feature (i will implement this later)
 
     @staticmethod
     def bd_clear():
@@ -158,7 +156,7 @@ class FourthTestCase:
         l2.create_user_with_library_card_number(**TestCaseSettings.p3_kwargs)
         l2.create_user_with_library_card_number(**TestCaseSettings.v_kwargs)
 
-        # checks the information of the system. I dunno what is it, but we need this feature (i will implement this later)
+        # l2 checks the information of the system. I dunno what is it, but we need this feature (i will implement this later)
 
     @staticmethod
     def bd_clear():
@@ -173,7 +171,13 @@ class FifthTestCase:
 
     @staticmethod
     def test_case():
-        pass
+        l2 = Librarian.objects.get(login='lib2')
+        l3 = Librarian.objects.get(login='lib3')
+        d1 = Book.objects.get(year='2009')
+
+        l3.remove_copies(d1, 1)
+
+        # l2 checks the information of the system. I dunno what is it, but we need this feature (i will implement this later)
 
     @staticmethod
     def bd_clear():
@@ -188,7 +192,26 @@ class SixthTestCase:
 
     @staticmethod
     def test_case():
-        pass
+        p1 = Professor.objects.get(login='prof1')
+        p2 = Professor.objects.get(login='prof2')
+        p3 = Professor.objects.get(login='prof3')
+        s = Student.objects.get(login='stud1')
+        v = VisitingProfessor.objects.get(login='visit1')
+        l1 = Librarian.objects.get(login='lib1')
+        d3 = Book.objects.get(year='1997')
+
+        p1.check_out_doc(d3)
+        l1.handle_book(p1, d3)
+        p2.check_out_doc(d3)
+        l1.handle_book(p2, d3)
+        s.check_out_doc(d3)
+        l1.handle_book(s, d3)
+        v.check_out_doc(d3)
+        l1.handle_book(v, d3)
+        p3.check_out_doc(d3)
+        l1.handle_book(p3, d3)
+
+        l1.outstanding_request(d3)
 
     @staticmethod
     def bd_clear():
@@ -203,7 +226,26 @@ class SeventhTestCase:
 
     @staticmethod
     def test_case():
-        pass
+        p1 = Professor.objects.get(login='prof1')
+        p2 = Professor.objects.get(login='prof2')
+        p3 = Professor.objects.get(login='prof3')
+        s = Student.objects.get(login='stud1')
+        v = VisitingProfessor.objects.get(login='visit1')
+        l3 = Librarian.objects.get(login='lib3')
+        d3 = Book.objects.get(year='1997')
+
+        p1.check_out_doc(d3)
+        l3.handle_book(p1, d3)
+        p2.check_out_doc(d3)
+        l3.handle_book(p2, d3)
+        s.check_out_doc(d3)
+        l3.handle_book(s, d3)
+        v.check_out_doc(d3)
+        l3.handle_book(v, d3)
+        p3.check_out_doc(d3)
+        l3.handle_book(p3, d3)
+
+        l3.outstanding_request(d3)
 
     @staticmethod
     def bd_clear():
@@ -218,7 +260,8 @@ class EighthTestCase:
 
     @staticmethod
     def test_case():
-        pass
+        admin1 = Admin.objects.first()
+        admin1
 
     @staticmethod
     def bd_clear():
@@ -315,76 +358,85 @@ class FourteenthTestCase:
         TestCaseSettings.bd_clear()
 
 
+# TestCaseSettings.bd_clear()
 # FirstTestCase.set_up()
 # FirstTestCase.test_case()
 # FirstTestCase.bd_clear()
-
-
+#
+#
+# TestCaseSettings.bd_clear()
 # SecondTestCase.set_up()
 # SecondTestCase.test_case()
 # SecondTestCase.bd_clear()
-
-
+#
+#
+# TestCaseSettings.bd_clear()
 # ThirdTestCase.set_up()
 # ThirdTestCase.test_case()
 # ThirdTestCase.bd_clear()
-
-'''
-Now only first 3 test cases works
-4 test case doesn't work (i'm tired to think, so i go to sleep, and will fix it tomorrow)
-All other test cases do not have test_case() (i will implement them tomorrow)
-'''
-
+#
+#
+# TestCaseSettings.bd_clear()
 # FourthTestCase.set_up()
 # FourthTestCase.test_case()
 # FourthTestCase.bd_clear()
-
-
+#
+#
+# TestCaseSettings.bd_clear()
 # FifthTestCase.set_up()
 # FifthTestCase.test_case()
 # FifthTestCase.bd_clear()
 
 
+# TestCaseSettings.bd_clear()
 # SixthTestCase.set_up()
 # SixthTestCase.test_case()
 # SixthTestCase.bd_clear()
 
 
+# TestCaseSettings.bd_clear()
 # SeventhTestCase.set_up()
 # SeventhTestCase.test_case()
 # SeventhTestCase.bd_clear()
 
 
+# TestCaseSettings.bd_clear()
 # EighthTestCase.set_up()
 # EighthTestCase.test_case()
 # EighthTestCase.bd_clear()
 
 
+# TestCaseSettings.bd_clear()
 # NinthTestCase.set_up()
 # NinthTestCase.test_case()
 # NinthTestCase.bd_clear()
 
 
+# TestCaseSettings.bd_clear()
 # TenthTestCase.set_up()
 # TenthTestCase.test_case()
 # TenthTestCase.bd_clear()
 
 
+# TestCaseSettings.bd_clear()
 # EleventhTestCase.set_up()
 # EleventhTestCase.test_case()
 # EleventhTestCase.bd_clear()
 
 
+# TestCaseSettings.bd_clear()
 # TwelfthTestCase.set_up()
 # TwelfthTestCase.test_case()
 # TwelfthTestCase.bd_clear()
 
 
+# TestCaseSettings.bd_clear()
 # ThirteenthTestCase.set_up()
 # ThirteenthTestCase.test_case()
 # ThirteenthTestCase.bd_clear()
 
 
+# TestCaseSettings.bd_clear()
 # FourteenthTestCase.set_up()
 # FourteenthTestCase.test_case()
 # FourteenthTestCase.bd_clear()

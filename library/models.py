@@ -90,7 +90,7 @@ Class describing types of models kept in the library & all operations to apply w
 
 
 class Document(models.Model):
-    library = models.ForeignKey(Library, on_delete=models.DO_NOTHING, related_name='documents')
+    library = models.ForeignKey(Library, on_delete=models.CASCADE, related_name='documents')
     title = models.CharField(max_length=128)
     authors = models.ManyToManyField(Author, related_name='documents')
     price_value = models.IntegerField()
@@ -103,7 +103,22 @@ class Document(models.Model):
     professorsQueue = models.ManyToManyField("Professor", related_name='documents', blank=True)
 
     def booking_period(self, user):
-        return datetime.timedelta(weeks=2)
+        if isinstance(self, Book):
+            if isinstance(user, Faculty):
+                return datetime.timedelta(days=28)
+            if isinstance(user, VisitingProfessor):
+                return datetime.timedelta(days=7)
+            if self.is_best_seller:
+                return datetime.timedelta(days=14)
+            return datetime.timedelta(days=21)
+
+        elif isinstance(self, AudioVideo):
+            if isinstance(user, VisitingProfessor):
+                return datetime.timedelta(days=7)
+            return datetime.timedelta(days=14)
+
+        else:
+            return datetime.timedelta(days=14)
 
     def queue_type(self, user):
         if isinstance(user, Student):
@@ -147,16 +162,16 @@ class Book(Document):
     is_best_seller = models.BooleanField(default=False)
     edition = models.CharField(max_length=128)
     publisher = models.CharField(max_length=64)
-    year = models.IntegerField()
+    year = models.CharField(max_length=4)
 
-    def booking_period(self, user):
-        if isinstance(user, Faculty):
-            return datetime.timedelta(days=28)
-        if isinstance(user, VisitingProfessor):
-            return datetime.timedelta(days=7)
-        if self.is_best_seller:
-            return datetime.timedelta(days=14)
-        return datetime.timedelta(days=21)
+    # def booking_period(self, user):
+    #     if isinstance(user, Faculty):
+    #         return datetime.timedelta(days=28)
+    #     if isinstance(user, VisitingProfessor):
+    #         return datetime.timedelta(days=7)
+    #     if self.is_best_seller:
+    #         return datetime.timedelta(days=14)
+    #     return datetime.timedelta(days=21)
 
 
 ''' Derivative from Document class with only book features'''
@@ -172,12 +187,12 @@ class ReferenceBook(Book):
 
 class AudioVideo(Document):
     publisher = models.CharField(max_length=64)
-    year = models.IntegerField()
+    year = models.CharField(max_length=4)
 
-    def booking_period(self, user):
-        if isinstance(user, VisitingProfessor):
-            return datetime.timedelta(weeks=1)
-        return datetime.timedelta(weeks=2)
+    # def booking_period(self, user):
+    #     if isinstance(user, VisitingProfessor):
+    #         return datetime.timedelta(weeks=1)
+    #     return datetime.timedelta(weeks=2)
 
 
 ''' Specific class for editing information in text sources by Editors (updaters of sources)'''
@@ -193,7 +208,7 @@ class Editor(models.Model):
 
 class Journal(models.Model):
     title = models.CharField(max_length=128)
-    library = models.ForeignKey(Library, on_delete=models.DO_NOTHING, related_name='journals')
+    library = models.ForeignKey(Library, on_delete=models.CASCADE, related_name='journals')
     authors = models.ManyToManyField(Author, related_name='journals')
     price_value = models.IntegerField()
     keywords = models.ManyToManyField(Keyword, related_name='journals')
@@ -225,7 +240,7 @@ class JournalArticles(Document):
 
 class Copy(models.Model):
     user_card = models.ForeignKey('UserCard', default=None, on_delete=models.DO_NOTHING, related_name='copies', null=True)
-    document = models.ForeignKey(Document, on_delete=models.DO_NOTHING, related_name='copies')
+    document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name='copies')
     number = models.IntegerField()
     is_checked_out = models.BooleanField(default=False)
     need_to_return = models.BooleanField(default=False)
@@ -275,7 +290,7 @@ class User(models.Model):
 
 class UserCard(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='user_card')
-    library = models.ForeignKey(Library, default=None, on_delete=models.DO_NOTHING, related_name='user_cards')
+    library = models.ForeignKey(Library, default=None, on_delete=models.CASCADE, related_name='user_cards')
     library_card_number = models.IntegerField(default=None)
 
 
@@ -457,6 +472,7 @@ class Librarian(User):
                         copy.is_checked_out = True
                         user.user_card.copies.add(copy)
                         copy.booking_date = datetime.date.today()
+                        copy.overdue_date = copy.booking_date + doc.booking_period(user)
                         queue.remove(user)
                         doc.save()
                         user.user_card.save()
@@ -496,16 +512,22 @@ class Librarian(User):
             removed_users_mails = []
             for user in doc.studentsQueue.all():
                 removed_users_mails.append(user.mail)
+                doc.studentsQueue.remove(user)
             for user in doc.instructorsQueue.all():
                 removed_users_mails.append(user.mail)
+                doc.instructorsQueue.remove(user)
             for user in doc.TAsQueue.all():
                 removed_users_mails.append(user.mail)
+                doc.TAsQueue.remove(user)
             for user in doc.professorsQueue.all():
                 removed_users_mails.append(user.mail)
+                doc.professorsQueue.remove(user)
             for user in doc.visitingProfessorsQueue.all():
                 removed_users_mails.append(user.mail)
+                doc.visitingProfessorsQueue.remove(user)
+            library = Library.objects.first()
             if len(removed_users_mails) > 0:
-                send_mail(message=message, subject='Outstanding request', from_email=Library.mail, recipient_list=removed_users_mails, auth_user=Library.mail, auth_password=Library.password)
+                # send_mail(message=message, subject='Outstanding request', from_email=library.mail, recipient_list=removed_users_mails, auth_user=library.mail, auth_password=library.password)
                 logging.info("Librarian " + self.first_name + " " + self.second_name + " notified the patrons who was removed from deleted queue for the document " + doc.title + " due to an outstanding request")
 
             message = 'Dear user, please return the copy of "' + doc.title + '" immediately due to an outstanding request. You have only 1 day to return this document'
@@ -515,17 +537,18 @@ class Librarian(User):
                 copy.overdue_date = datetime.date.today() + datetime.timedelta(days=1)
                 copy.save()
             if len(users_with_copy):
-                send_mail(message=message, subject='Outstanding request', from_email=Library.mail, recipient_list=users_with_copy, auth_user=Library.mail, auth_password=Library.password)
+                # send_mail(message=message, subject='Outstanding request', from_email=library.mail, recipient_list=users_with_copy, auth_user=library.mail, auth_password=library.password)
                 logging.info("Librarian " + self.first_name + " " + self.second_name + " notified the patrons who should to immediately return the document " + doc.title + " due to an outstanding request")
         else:
             logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create an outstanding request for the document " + doc.title + ", but he have not enough level of privileges")
             # print("You cannot perform this action")
 
     def notify(self, user, document):
-        message='Dear user, you have 1 day to take a copy of ' + document.title + ' you queued up for. After the expiration of this period you will lose this opportunity and will be removed from the queue. Good luck. Your InnoLib'
+        message = 'Dear user, you have 1 day to take a copy of ' + document.title + ' you queued up for. After the expiration of this period you will lose this opportunity and will be removed from the queue. Good luck. Your InnoLib'
+        library = Library.objects.first()
         send_mail(
-            message='Dear user, you have 1 day to take a copy of document you queued up for. After the expiration of this period you will lose this opportunity and will be removed from the queue. Good luck. Your InnoLib',
-            subject='Waiting notification', from_email=Library.mail, recipient_list=user.mail, auth_user=Library.mail, auth_password=Library.password)
+            message=message,
+            subject='Waiting notification', from_email=library.mail, recipient_list=user.mail, auth_user=library.mail, auth_password=library.password)
         logging.info("The message with notifying was sent to the email " + user.mail + " of " + user.first_name + " " + user.second_name)
 
     def accept_doc(self, user, doc):
@@ -605,16 +628,20 @@ class Librarian(User):
             return list
 
     def create_authors(self, list_of_names):
-        logging.info("Librarian " + self.first_name + " " + self.second_name + " trying to create an authors " + list_of_names)
+        names = list_of_names[0]
+        for i in range(1, len(list_of_names)):
+            names += ', '
+            names += list_of_names[i]
+        logging.info("Librarian " + self.first_name + " " + self.second_name + " trying to create an authors: " + names)
         if self.level_of_privileges >= 2:
             list = []
             for name in list_of_names:
                 author = Author.objects.create(name=name)
                 author.save()
                 list.append(author)
-            logging.info("Librarian " + self.first_name + " " + self.second_name + " created an authors " + list_of_names)
+            logging.info("Librarian " + self.first_name + " " + self.second_name + " created an authors: " + names)
             return list
-        logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create an authors " + list_of_names + ", but he have not enough level of privileges")
+        logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create an authors: " + names + ", but he have not enough level of privileges")
 
     def create_author(self, name):
         logging.info("Librarian " + self.first_name + " " + self.second_name + " trying to create an author " + name)
@@ -625,9 +652,10 @@ class Librarian(User):
             return author
         logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create an author " + name + ", but he have not enough level of privileges")
 
-    def create_book(self, library, is_best_seller, reference, title, price_value, edition, publisher, year):
+    def create_book(self, is_best_seller, reference, title, price_value, edition, publisher, year):
         logging.info("Librarian " + self.first_name + " " + self.second_name + " trying to create a book " + title)
         if self.level_of_privileges >= 2:
+            library = Library.objects.first()
             class_model = ReferenceBook if reference else Book
             model = class_model.objects.create(library=library, title=title, price_value=price_value,
                                                is_best_seller=is_best_seller, edition=edition, publisher=publisher,
@@ -638,7 +666,8 @@ class Librarian(User):
         logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create a book" + title + ", but he have not enough level of privileges")
         # print("You cannot perform this action")
 
-    def create_book_new(self, library, is_best_seller, reference, title, price_value, edition, publisher, year, authors, keywords):
+    def create_book_new(self, is_best_seller, reference, title, price_value, edition, publisher, year, authors, keywords):
+        library = Library.objects.first()
         logging.info("Librarian " + self.first_name + " " + self.second_name + " trying to create a book " + title)
         if self.level_of_privileges >= 2:
             class_model = ReferenceBook if reference else Book
@@ -657,7 +686,8 @@ class Librarian(User):
         logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create a book" + title + ", but he have not enough level of privileges")
         # print("You cannot perform this action")
 
-    def create_book_with_authors_names(self, library, is_best_seller, reference, title, price_value, edition, publisher, year, authors, keywords):
+    def create_book_with_authors_names(self, is_best_seller, reference, title, price_value, edition, publisher, year, authors, keywords):
+        library = Library.objects.first()
         logging.info("Librarian " + self.first_name + " " + self.second_name + " trying to create a book " + title)
         if self.level_of_privileges >= 2:
             class_model = ReferenceBook if reference else Book
@@ -688,11 +718,12 @@ class Librarian(User):
                 copy = Copy.objects.create(document=document, number=number)
                 copy.save()
                 logging.info("Librarian " + self.first_name + " " + self.second_name + " created " + str(number) + " copies of document " + document.title)
-                return True
+            return True
         logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create " + str(number) + " copies of document " + document.title + ", but he have not enough level of privileges")
         # print("You cannot perform this action")
 
-    def create_av(self, library, title, publisher, year, price_value):
+    def create_av(self, title, publisher, year, price_value):
+        library = Library.objects.first()
         logging.info("Librarian " + self.first_name + " " + self.second_name + " trying to create AV " + title)
         if self.level_of_privileges >= 2:
             av = AudioVideo.objects.create(library=library, title=title, price_value=price_value, publisher=publisher, year=year)
@@ -787,12 +818,20 @@ class Librarian(User):
     def remove_copies(self, document, count):
         logging.info("Librarian " + self.first_name + " " + self.second_name + " trying to remove " + str(count) + " copies of document" + document.title)
         if self.level_of_privileges == 3:
-            for copy in document.copies:
+            if count > document.copies.count():
+                logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to remove " + str(count) + " copies of document" + document.title + ", but this document have not so much copies")
+                return False
+            amount = count
+            for copy in document.copies.all():
                 if not copy.is_checked_out:
                     copy.delete()
-                    count -= 1
-                    if count == 0:
+                    amount -= 1
+                    if amount == 0:
                         break
+            document.save()
+            for copy in document.copies.all():
+                copy.number -= count
+                copy.save()
             document.save()
             logging.info("Librarian " + self.first_name + " " + self.second_name + " removed " + str(count) + " copies of document" + document.title)
             return True
@@ -802,7 +841,7 @@ class Librarian(User):
     def remove_all_copies(self, document):
         logging.info("Librarian " + self.first_name + " " + self.second_name + " trying to remove all copies of document" + document.title)
         if self.level_of_privileges == 3:
-            for copy in document.copies:
+            for copy in document.copies.all():
                 if not copy.is_checked_out:
                     copy.delete()
             document.save()
@@ -856,7 +895,7 @@ class Admin(User):
         logging.info("Admin " + self.first_name + " " + self.second_name + " trying to add librarian" + first_name + " " + second_name)
         library_card_number = User.objects.last().user_card.library_card_number + 1
         librarian = Librarian.objects.create(first_name=first_name, second_name=second_name, login=login, password=password,
-                                             address=address, phone_number=phone_number, mail=mail, level_of_privileges=level_of_privileges)
+                                             address=address, phone_number=phone_number, mail=mail, level_of_privileges=level_of_privileges, status='Librarian')
         user_card = UserCard.objects.create(user=librarian, library=self.user_card.library, library_card_number=library_card_number)
         librarian.save()
         user_card.save()
