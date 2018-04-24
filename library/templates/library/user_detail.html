@@ -5,10 +5,23 @@
     <title>Title</title>
 </head>
 <body>
-USER:
+<form method="POST" class="table" style="position: fixed; top: 150px; left: 600px; border: #FCA205 5px solid " >
+{{ patron.as_p }}
+{{ user_list.as_table }}
 {{ user }}
+<br>
 {{ user.first_name }}
+<br>
 {{ user.id }}
-<a href="{% url 'librarian_delete_user.html' user.id %}">Delete user</a>
+<br>
+zzz {{ patron.id }}
+{{ user_list.as_table }}
+{% for user in user.user_card.copies.get %}
+    <tr class='success'>
+            <td>{{ user.user_card.copies.get.document.title}}</td>
+    </tr>
+{% endfor %}
+<a href="{% url 'librarian_delete_user' user.id%}">Delete user</a>
+</form>
 </body>
 </html>

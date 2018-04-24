@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>This Copy</title>
+</head>
+<body>
+<form method="POST" class="table" style="position: fixed; top: 150px; left: 600px; border: #FCA205 5px solid " >
+{{ copy.as_p }}
+Great Copy
+<br>
+{{ copy.document.title }}
+<br>
+    {% for i in copy.document.authors.all %}
+        <tr class='success'>
+                        <td>{{ i.name }}</td>
+                  </tr>
+    {% endfor %}
+<br>
+здесь сделать взятие, если страницу видит юзер, и удаление, если страницу видит библиотекарь. или нужен еще набор отдельных страниц???????????
+</form>
+</body>
+</html>

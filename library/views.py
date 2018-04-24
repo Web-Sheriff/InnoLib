@@ -8,6 +8,14 @@ from library.models import *
 from .forms import *
 
 
+class patron_detail(generic.DetailView):
+    model = Patron
+
+
+class librarian_detail(generic.DetailView):
+    model = Librarian
+
+
 class user_list(generic.ListView):
     model = User
 
@@ -22,6 +30,10 @@ class book_list(generic.ListView):
 
 class user_detail(generic.DetailView):
     model = User
+
+
+class copy_detail(generic.DetailView):
+    model = Copy
 
 
 def library(request):
@@ -103,6 +115,7 @@ def librarian_add_user(request):
         form = UserForm()
     return render(request, 'library/librarian_add_user.html', {'form': form})
 
+
 def librarian_add_instructor(request):
     if request.method == "POST":
         form = UserForm(request.POST)
@@ -134,7 +147,6 @@ def librarian_add_visprofessor(request):
     else:
         form = UserForm()
     return render(request, 'library/librarian_add_visprofessor.html', {'form': form})
-
 
 
 def librarian_add_ta(request):
@@ -338,7 +350,6 @@ def list_of_librarians(request):
     return render(request, 'library/list_of_librarians.html', locals())
 
 
-
 def logined_library(request):
     Doc = Document.objects.all()
     return render(request, 'library/user_list.html', locals())
@@ -352,11 +363,18 @@ def list_to_delete(request):
 def librarian_delete_user(request, pk):
     user = User.objects.get(pk=pk)
     user.delete()
-    print('\n\n\n')
-    return HttpResponseRedirect('/')
+    return HttpResponseRedirect('/',locals())
+
+
+def admin_delete_librarian(request, pk):
+    user = Librarian.objects.get(pk=pk)
+    user.delete()
+    return HttpResponseRedirect('/',locals())
+
 
 def adding_doc_start(request):
     return render(request, 'library/adding_doc_start.html', locals())
+
 
 def adding_users_start(request):
     return render(request, 'library/adding_users_start.html', locals())

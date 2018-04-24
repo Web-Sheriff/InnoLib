@@ -2,13 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Nice Librarian</title>
 </head>
 <body>
 USER:
 {{ user }}
 {{ user.first_name }}
+{{ user.second_name }}
 {{ user.id }}
-<a href="{% url 'delete_user' user.id %}">Delete user</a>
+{{ user.level_of_privileges }}
+<a href="{% url 'admin_delete_librarian' user.id%}">Delete librarian</a>
 </body>
 </html>

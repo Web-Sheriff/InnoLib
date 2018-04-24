@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from django.urls import path, include
+from django.urls import path
 from . import views
 
 urlpatterns = [
@@ -33,4 +33,8 @@ urlpatterns = [
     url(r'^adding_users_start', views.adding_users_start, name='adding_users_start'),
     path('users/<int:pk>/', views.user_detail.as_view(), name='user_detail'),
     path('users/<int:pk>/librarian_delete_user/', views.librarian_delete_user, name='librarian_delete_user'),
+    path('librarians/<int:pk>/admin_delete_librarian/', views.admin_delete_librarian, name='admin_delete_librarian'),
+    path('patrons/<int:pk>/', views.patron_detail.as_view(), name='patron_detail'),
+    path('librarians/<int:pk>/', views.librarian_detail.as_view(), name='librarian_detail'),
+    path('copies/<int:pk>/', views.copy_detail.as_view(), name='patron_detail')
 ]
