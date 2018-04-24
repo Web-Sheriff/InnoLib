@@ -15,15 +15,15 @@ class TestCaseSettings:
 
     @staticmethod
     def bd_clear():
-        Library.objects.all().delete()
-        User.objects.all().delete()
-        Document.objects.all().delete()
-        Author.objects.all().delete()
-        Editor.objects.all().delete()
-        Issue.objects.all().delete()
-        Journal.objects.all().delete()
-        Keyword.objects.all().delete()
-        Login.objects.all().delete()
+        # Library.objects.all().delete()
+        # User.objects.all().delete()
+        # Document.objects.all().delete()
+        # Author.objects.all().delete()
+        # Editor.objects.all().delete()
+        # Issue.objects.all().delete()
+        # Journal.objects.all().delete()
+        # Keyword.objects.all().delete()
+        # Login.objects.all().delete()
 
     '''kwargs for users and documents creating'''
 

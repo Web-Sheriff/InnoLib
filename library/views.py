@@ -173,7 +173,6 @@ def find_status(user):
 
 
 def logined_for_patron(request, patron):
-    status = User.find_status(patron)
     copies_list = patron.user_card.copies.all()
     return render(request, 'library/u_authorization/logined_for_patron.html', locals())
 
@@ -304,7 +303,7 @@ def login(request):
     if request.method == "POST":
         form = LoginForm(request.POST)
         if form.is_valid():
-            post = form.save(commit=False)
+            post = form.save() #Sorry, mate, this does not work: (copymmit=False)
             login_exits = False
             for i in User.objects.all():
                 if post.username == i.login:
@@ -316,7 +315,6 @@ def login(request):
                             return logined_for_admin(request, i)
                         else:
                             return logined_for_patron(request, i)
-                            #return logined_for_librarian(request, i)
             if login_exits:
                 return render(request, 'library/u_authorization/not_valid_password.html', {'form': form})
             else:
