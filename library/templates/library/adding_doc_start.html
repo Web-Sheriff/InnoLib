@@ -5,11 +5,23 @@
     <title>Title</title>
 </head>
 <body>
+
+<input type="checkbox" name="copy" id="copy" value="1" onclick="return copy()"> Copy Of Existing document </input>
+<script>
+    function copy(){
+    if(document.getElementById('copy').checked){
+        window.location='librarian_add_copy';
+        return false;
+    }
+    return true;
+}
+</script>
+<br>
         <input type="checkbox" name="book" id="book" value="1" onclick="return book()"> Book</input>
         <script>
 function book(){
     if(document.getElementById('book').checked){
-        window.location='libarary/librarian_add_book';
+        window.location='librarian_add_book';
         return false;
     }
     return true;}
@@ -19,7 +31,19 @@ function book(){
 <script>
     function journal(){
     if(document.getElementById('journal').checked){
-        window.location='library/librarian_add_journal';
+        window.location='librarian_add_journal';
+        return false;
+    }
+    return true;
+}
+</script>
+
+        <br>
+         <input type="checkbox" name="av" id="av" value="1" onclick="return av()"> Audio and Video </input>
+<script>
+    function av(){
+    if(document.getElementById('av').checked){
+        window.location='librarian_add_av';
         return false;
     }
     return true;

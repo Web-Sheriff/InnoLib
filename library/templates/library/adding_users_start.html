@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>Choose a user you want to add</title>
+</head>
+<body>
+
+<input type="checkbox" name="student" id="student" value="1" onclick="return student()"> Student </input>
+<script>
+    function student(){
+    if(document.getElementById('student').checked){
+        window.location='librarian_add_student';
+        return false;
+    }
+    return true;
+}
+</script>
+<br>
+
+
+<input type="checkbox" name="instructor" id="instructor" value="1" onclick="return instructor()"> Instructor</input>
+<script>
+function instructor(){
+    if(document.getElementById('instructor').checked){
+        window.location='librarian_add_instructor';
+        return false;
+    }
+    return true;}
+</script>
+        <br>
+
+<input type="checkbox" name="ta" id="ta" value="1" onclick="return ta()"> TA</input>
+<script>
+    function ta(){
+    if(document.getElementById('ta').checked){
+        window.location='librarian_add_ta';
+        return false;
+    }
+    return true;
+}
+</script>
+<br>
+
+<input type="checkbox" name="visprofessor" id="visprofessor" value="1" onclick="return visprofessor()"> Visiting Professor </input>
+<script>
+    function visprofessor(){
+    if(document.getElementById('visprofessor').checked){
+        window.location='librarian_add_visprofessor';
+        return false;
+    }
+    return true;
+}
+</script>
+<br>
+
+<input type="checkbox" name="professor" id="professor" value="1" onclick="return professor()"> Professor </input>
+<script>
+    function professor(){
+    if(document.getElementById('professor').checked){
+        window.location='librarian_add_professor';
+        return false;
+    }
+    return true;
+}
+</script>
+
+</body>
+</html>
