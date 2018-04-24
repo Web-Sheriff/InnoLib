@@ -330,9 +330,9 @@ class FourteenthTestCase:
 # ThirdTestCase.bd_clear()
 
 '''
-now only first 3 test cases works
+Now only first 3 test cases works
 4 test case doesn't work (i'm tired to think, so i go to sleep, and will fix it tomorrow)
-all other test cases do not have test_case() (i will implement them tomorrow)
+All other test cases do not have test_case() (i will implement them tomorrow)
 '''
 
 # FourthTestCase.set_up()
