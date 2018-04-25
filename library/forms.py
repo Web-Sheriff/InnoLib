@@ -82,6 +82,24 @@ class SignUpTA(forms.ModelForm):
         exclude = [""]
 
 
+class SignUpLibrarian(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput)
+
+    class Meta:
+        model = Librarian
+        fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail', 'status')
+        exclude = [""]
+
+
+class SignUpAdmin(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput)
+
+    class Meta:
+        model = Admin
+        fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail', 'status')
+        exclude = [""]
+
+
 class CheckOut(forms.ModelForm):
     class Meta:
         model = Document
