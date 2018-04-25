@@ -205,7 +205,7 @@ def signup(request):
             if post.status == 'Student' or post.status == 'student':
                 return redirect('signup_student')
             elif post.status == 'Professor' or post.status == 'professor':
-                return redirect ('signup_professor')
+                return redirect('signup_professor')
             elif post.status == 'Visiting Professor' or post.status == 'visiting professor' or \
                     post.status == 'visiting Professor' or post.status == 'Visiting professor':
                 return redirect('signup_visiting_professor')
