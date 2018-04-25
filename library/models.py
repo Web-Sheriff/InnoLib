@@ -818,13 +818,13 @@ class Librarian(User):
             names += list_of_names[i]
         logging.info("Librarian " + self.first_name + " " + self.second_name + " trying to create an authors: " + names)
         if self.level_of_privileges >= 2:
-            list = []
+            list_of_authors = []
             for name in list_of_names:
                 author = Author.objects.get_or_create(name=name)
                 author[0].save()
-                list.append(author[0])
+                list_of_authors.append(author[0])
             logging.info("Librarian " + self.first_name + " " + self.second_name + " created an authors: " + names)
-            return list
+            return list_of_authors
         logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create an authors: " + names + ", but he has not enough level of privileges")
 
     def create_author(self, name):
