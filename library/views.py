@@ -201,19 +201,18 @@ def signup(request):
     if request.method == "POST":
         form = SignUpForm(request.POST)
         if form.is_valid():
-            if form.cleaned_data['status'] == 'Student' or form.cleaned_data['status'] == 'student':
-                post = form.save()
+            post = form.save()
             if post.status == 'Student' or post.status == 'student':
-                return signup_student(request)
+                return redirect('signup_student')
             elif post.status == 'Professor' or post.status == 'professor':
-                return signup_professor(request)
+                return redirect ('signup_professor')
             elif post.status == 'Visiting Professor' or post.status == 'visiting professor' or \
                     post.status == 'visiting Professor' or post.status == 'Visiting professor':
-                return signup_visiting_professor(request)
+                return redirect('signup_visiting_professor')
             elif post.status == 'Instructor' or post.status == 'instructor':
-                return signup_instructor(request)
+                return redirect('signup_instructor')
             elif post.status == 'ta' or post.status == 'TA' or post.status == 'Ta' or post.status == 'tA':
-                return signup_ta(request)
+                return redirect('signup_ta')
             else:
                 return render(request, 'library/u_account/signup_not_valid.html', {'form': form})
     else:
