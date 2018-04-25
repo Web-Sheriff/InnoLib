@@ -15,6 +15,7 @@ urlpatterns = [
     url(r'^signup_ta', views.signup_ta, name='signup_ta'),
     url(r'^login_not_valid', views.login_not_valid, name='login_not_valid'),
     url(r'^innolib/admin_account', views.admin_account, name='admin_account'),
+    url(r'^innolib/checkout', views.checkout, name='checkout'),
     url(r'^innolib/lib_account_users', views.lib_account_users, name='lib_account1'),
     url(r'^innolib/lib_account_books', views.lib_account_docs, name='lib_account2'),
     url(r'^innolib/lib_account/delete_user', views.lib_account_delete_user, name='delete_user'),

@@ -306,6 +306,16 @@ def login(request):
 def logined_for_patron(request, patron):
     return render(request, 'library/u_account/logined_for_patron.html', locals())
 
+def checkout(request):
+    if request.method == "POST":
+        form1 = CheckOut(request.POST)
+        if form1.is_valid():
+            form1.save()
+            return redirect('logined_for_librarian')
+    else:
+        form1 = CheckOut()
+    return render(request, 'library/u_account/checkout.html', {'form1': form1}, locals())
+
 
 def account(request):
     return render(request, 'library/u_account/account.html')

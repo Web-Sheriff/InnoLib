@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Yeah, boy</title>
+</head>
+
+<body>
+
+<!-- For working with form -->
+{% block content %}
+    <h1 style="position: fixed; top: 130px; left: 150px;); ">Check out the book</h1>
+    <form method="POST" class="librarian_add_user"
+          style="position: fixed; top: 200px; left: 150px; border: #FCA205 5px solid ">{% csrf_token %}
+        {{ form1.as_p }}
+        <button type="submit" class="save btn btn-default" style="margin-top: 5px; background: yellow">Delete</button>
+    </form>
+
+{% endblock %}
+
+</body>
+</html>
