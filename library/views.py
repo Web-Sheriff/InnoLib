@@ -343,7 +343,11 @@ def lib_account_delete_user(request):
     if request.method == "POST":
         form1 = DeleteUser(request.POST)
         if form1.is_valid():
-            form1.save()
+            post = form1.save()
+            for i in User.objects.all():
+                if i.first_name == post.first_name:
+                    if i.second_name == post.secondname:
+                        lib0.remove_object(i)
             return redirect('logined_for_librarian')
     else:
         form1 = DeleteUser()
@@ -356,7 +360,7 @@ def lib_account_delete_doc(request):
             post = form1.save()
             for i in Document.objects.all():
                 if i.title == form1.title:
-                    pass
+                    lib0.remove_object(i)
             return redirect('logined_for_librarian')
     else:
         form1 = DeleteDoc()
@@ -378,6 +382,20 @@ def admin_account(request):
         form_add_lib = AddLibrarian()
     return render(request, 'library/u_account/admin_account.html', {'form_add_lib': form_add_lib}, locals())
 
+
+def lib_account_delete_lib(request):
+    if request.method == "POST":
+        form1 = DeleteUser(request.POST)
+        if form1.is_valid():
+            post = form1.save()
+            for i in User.objects.all():
+                if i.first_name == post.first_name:
+                    if i.second_name == post.secondname:
+                        admin0.remove_object(i)
+            return redirect('logined_for_librarian')
+    else:
+        form1 = DeleteUser()
+    return render(request, 'library/u_account/lib_account_delete_user.html', {'form1': form1}, locals())
 
 def login_not_valid(request):
     return render(request, 'library/u_authorization/not_valid_login.html')
