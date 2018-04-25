@@ -3,13 +3,13 @@ from django.shortcuts import render, redirect
 # from django.views.generic import TemplateView
 # Create your views here.
 from django.views import generic
-from django.urls import reverse
 
 from .forms import *
 
 lib0 = Librarian
 patron0 = User
 admin0 = Admin
+
 
 class patron_detail(generic.DetailView):
     model = Patron
@@ -205,7 +205,7 @@ def signup(request):
             if post.status == 'Student' or post.status == 'student':
                 return redirect('signup_student')
             elif post.status == 'Professor' or post.status == 'professor':
-                return redirect ('signup_professor')
+                return redirect('signup_professor')
             elif post.status == 'Visiting Professor' or post.status == 'visiting professor' or \
                     post.status == 'visiting Professor' or post.status == 'Visiting professor':
                 return redirect('signup_visiting_professor')
@@ -213,6 +213,10 @@ def signup(request):
                 return redirect('signup_instructor')
             elif post.status == 'ta' or post.status == 'TA' or post.status == 'Ta' or post.status == 'tA':
                 return redirect('signup_ta')
+            elif post.status == 'librarian' or post.status == 'Librarian':
+                return redirect('signup_librarian')
+            elif post.status == 'Admin' or post.status == 'admin':
+                return redirect('signup_admin')
             else:
                 return render(request, 'library/u_account/signup_not_valid.html', {'form': form})
     else:
@@ -275,6 +279,28 @@ def signup_ta(request):
     return render(request, 'library/u_authorization/signup.html', {'form': form})
 
 
+def signup_librarian(request):
+    if request.method == "POST":
+        form = SignUpLibrarian(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('login')
+    else:
+        form = SignUpLibrarian()
+    return render(request, 'library/u_authorization/signup.html', {'form': form})
+
+
+def signup_admin(request):
+    if request.method == "POST":
+        form = SignUpAdmin(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('login')
+    else:
+        form = SignUpAdmin()
+    return render(request, 'library/u_authorization/signup.html', {'form': form})
+
+
 def login(request):
     if request.method == "POST":
         form = LoginForm(request.POST)
@@ -305,6 +331,7 @@ def login(request):
 
 def logined_for_patron(request, patron):
     return render(request, 'library/u_account/logined_for_patron.html', locals())
+
 
 def checkout(request):
     if request.method == "POST":
@@ -350,6 +377,7 @@ def lib_account_docs(request):
         form1 = AddDocument()
     return render(request, 'library/u_account/lib_account_docs.html', {'form1': form1}, locals())
 
+
 def lib_account_delete_user(request):
     if request.method == "POST":
         form1 = DeleteUser(request.POST)
@@ -363,6 +391,7 @@ def lib_account_delete_user(request):
     else:
         form1 = DeleteUser()
     return render(request, 'library/u_account/lib_account_delete_user.html', {'form1': form1}, locals())
+
 
 def lib_account_delete_doc(request):
     if request.method == "POST":
@@ -407,6 +436,7 @@ def lib_account_delete_lib(request):
     else:
         form1 = DeleteUser()
     return render(request, 'library/u_account/lib_account_delete_user.html', {'form1': form1}, locals())
+
 
 def login_not_valid(request):
     return render(request, 'library/u_authorization/not_valid_login.html')
