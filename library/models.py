@@ -1,18 +1,34 @@
 import datetime
 import logging
 
+'''
+Now import 'from django.core.mail import send_mail' does not using,
+but it will be used when we will uncomment send_mail in send_email feature
+(we did it because we do not want to spam in every test)
+'''
+
 from django.core.mail import send_mail
 from django.db import models
 from django.utils.timezone import now
 
+
 '''
-Class that generates LMS 
+Logger is a Class that responsible for logs configurations
 '''
 
 
 class Logger:
     logging.basicConfig(filename='InnoLib.log', level=logging.INFO, format=u'[%(asctime)s] in /%(filename)s (line:%(lineno)d) #%(levelname)s : %(message)s')
     logging.info("Innopolis Library working")
+
+
+'''
+Library is a Class that generates out LMS
+
+Library has next features:
+    Create admin (create_admin)
+    Check is admin exists in system already (is_admin_exists)
+'''
 
 
 class Library(models.Model):
@@ -47,14 +63,12 @@ class Library(models.Model):
         return len(user.copies.all())
 
 
-''' 
-every user has exactly one user card
-user card contains all copies, which user checked out
-user card has unique number
 '''
+Login is a class for identifying in the system
 
-'''
-Login class for identifying in the system
+Login has next two fields:
+    Username (username) - char field
+    Password (password) - char field
 '''
 
 
@@ -63,10 +77,11 @@ class Login(models.Model):
     password = models.CharField(max_length=64)
 
 
-# All the classes below (but not copy) are about documents. Copy connects library and documents
-
 '''
-Class of books authors
+Author is a class of books authors
+
+Authors has only one field:
+    Name (name) - char field
 '''
 
 
@@ -75,7 +90,10 @@ class Author(models.Model):
 
 
 '''
-Class for searching in the system with keywords of CharField types
+Keyword is a class of keywords that existing in library and have relations with documents
+
+Keywords has only one field:
+    Word (word) - char field
 '''
 
 
@@ -83,9 +101,22 @@ class Keyword(models.Model):
     word = models.CharField(max_length=256)
 
 
-# There are 3 types of documents: books, journal articles and audio/video files
 '''
-Class describing types of models kept in the library & all operations to apply with them
+Document is a class describing types of models kept in the library & all operations to apply with them
+
+Document has five fields that specifying during creation procedure:
+    Library (library) - relation with Library
+    Title (title) - char field
+    Authors (authors) - relation with Author objects that already exists in database
+    Price value (price_value) - integer field
+    Keywords - relation with Keyword objects that already exists in database
+Document has five another fields-relations that represents priority queue for every document
+Document has four next features:
+    Booking period (booking_period) that determines overdue date during handle book procedure
+    And three another features for convenience work with priority queues:
+        Queue type (queue_type) that returns the right queue for certain user
+        First in queue (first_in_queue) that returns first patron in priority queue for this document
+        Has queue (has_queue) that returns boolean value if certain document has any patron in it's queue
 '''
 
 
@@ -93,7 +124,7 @@ class Document(models.Model):
     library = models.ForeignKey(Library, on_delete=models.CASCADE, related_name='documents')
     title = models.CharField(max_length=128)
     authors = models.ManyToManyField(Author, related_name='documents')
-    price_value = models.IntegerField(blank=True)
+    price_value = models.IntegerField()
     keywords = models.ManyToManyField(Keyword, related_name='documents')
 
     studentsQueue = models.ManyToManyField("Student", related_name='documents', blank=True)
@@ -153,10 +184,16 @@ class Document(models.Model):
             return True
 
 
-''' Derivative from Document class with only book features'''
+'''
+Book is a successor class from Document class with fields that have only Book:
 
+Book has four fields that specifying during creation procedure
+    Is best seller (is_best_seller) - boolean field
+    Edition (edition) - char field
+    Publisher (publisher) - char field
+    Year (year) - char field
+'''
 
-# Document
 
 class Book(Document):
     is_best_seller = models.BooleanField(default=False)
@@ -164,38 +201,39 @@ class Book(Document):
     publisher = models.CharField(max_length=64)
     year = models.CharField(max_length=4)
 
-    # def booking_period(self, user):
-    #     if isinstance(user, Faculty):
-    #         return datetime.timedelta(days=28)
-    #     if isinstance(user, VisitingProfessor):
-    #         return datetime.timedelta(days=7)
-    #     if self.is_best_seller:
-    #         return datetime.timedelta(days=14)
-    #     return datetime.timedelta(days=21)
 
+'''
+ReferenceBook is a successor class from Book class
 
-''' Derivative from Document class with only book features'''
+ReferenceBook has not any special fields or features, but his type is using in another features
+'''
 
 
 class ReferenceBook(Book):
-    authors = models.ManyToManyField(Author, related_name='reference')
-    keywords = models.ManyToManyField(Keyword, related_name='reference')
+    pass
 
 
-''' Derivative from Document class with only audio and video features'''
+'''
+AudioVideo is a successor class from Document class with fields that have only AudioVideo
+
+AudioVideo has two fields that specifying during creation procedure:
+    Publisher (publisher) - char field
+    Year (year) - char field
+'''
 
 
 class AudioVideo(Document):
     publisher = models.CharField(max_length=64)
     year = models.CharField(max_length=4)
 
-    # def booking_period(self, user):
-    #     if isinstance(user, VisitingProfessor):
-    #         return datetime.timedelta(weeks=1)
-    #     return datetime.timedelta(weeks=2)
 
+'''
+Editor is class of Journal editors
 
-''' Specific class for editing information in text sources by Editors (updaters of sources)'''
+Editor has two fields that specifying during creation procedure:
+    Name (first_name) - char field
+    Surname (second_name) - char field
+'''
 
 
 class Editor(models.Model):
@@ -203,14 +241,25 @@ class Editor(models.Model):
     second_name = models.CharField(max_length=64)
 
 
-''' Specaial class for Journals (not Document successor) because of special booking case'''
+'''
+Journal is a class of Journals
+
+Journal has five fields that specifying during creation procedure:
+    Title (title) - char field
+    Price value (price_value) - integer field
+    Library (library) - relation with library
+    Authors (authors) - relations with Author objects that already exists in database
+    Keywords (keywords) - relation with Keyword objects that already exists in database
+Journal has only one next feature:
+    Booking period (booking_period) that determines overdue date during handle book procedure
+'''
 
 
 class Journal(models.Model):
     title = models.CharField(max_length=128)
+    price_value = models.IntegerField()
     library = models.ForeignKey(Library, on_delete=models.CASCADE, related_name='journals')
     authors = models.ManyToManyField(Author, related_name='journals')
-    price_value = models.IntegerField()
     keywords = models.ManyToManyField(Keyword, related_name='journals')
 
     def booking_period(self, user):
@@ -219,7 +268,14 @@ class Journal(models.Model):
         return datetime.timedelta(weeks=2)
 
 
-''' Issye information which all journals are going to have'''
+'''
+Issue is a class of Issues
+
+Issue has three fields that specifying during creation procedure:
+    Publication date (publication_date) - date field
+    Editors (editors) - relation with Editor objects that already exists in database
+    Journal (journal) - relation with Journal
+'''
 
 
 class Issue(models.Model):
@@ -228,14 +284,34 @@ class Issue(models.Model):
     journal = models.ForeignKey(Journal, on_delete=models.DO_NOTHING, related_name='issues')
 
 
-'''Journal aricles differing from other sources to book'''
+'''
+JournalArticles is a class of Journal Articles
+
+JournalArticles has only one field that specifying during creation procedure:
+    Issue (issue) - relation with Issue
+'''
 
 
 class JournalArticles(Document):
     issue = models.ForeignKey(Issue, on_delete=models.DO_NOTHING, related_name='journal_articles')
 
 
-''' The main class about copies of documents using in UserCard'''
+'''
+Copy is a class describing copies of every Document objects:
+
+Copy has eight fields:
+    four fields that specifying during creation procedure:
+        Document (document) - relation with certain document that never will change, and if document will be deleted, all copies will be deleted by cascade deleting
+        Number (number) - integer field. Number of copies existing of certain document
+        Booking date (booking_date) - date field of handling a document
+        Overdue date (overdue_date) - date field of overdue date that determining by booking_period feature of Document
+    three fields that specifying by default by themselves:
+        Is checked out (is_checked_out) - boolean field, False by default, becoming True after handling book
+        Need to return (need_to_return) - boolean field, False by default, becoming True after overdue_date expiration
+        Can renew (can_renew) - boolean field, True by default, becoming False after renew or outstanding request, becoming True after handling book
+    and one field that specifying after handling book:
+        User card (user_card) - relation with UserCard of certain user that took this copy, Null by default, becoming Null after accepting copy
+'''
 
 
 class Copy(models.Model):
@@ -248,18 +324,6 @@ class Copy(models.Model):
     overdue_date = models.DateField(null=True)
     can_renew = models.BooleanField(default=True, blank=True)
 
-    # def check_out(self, user):
-    #     if isinstance(self.document, ReferenceBook):
-    #         return False
-    #     if not self.document.copies.filter(user=user).exists():
-    #         return False
-    #     self.is_checked_out = True
-    #     self.user = user
-    #     self.booking_date = datetime.date.today()
-    #     self.overdue_date = self.booking_date + self.document.booking_period(user)
-    #     self.save()
-    #     return True
-
     def is_overdue(self):
         return now() > self.overdue_date
 
@@ -267,12 +331,22 @@ class Copy(models.Model):
         return now() - self.overdue_date
 
 
-# All the classes below are about users
+'''
+User is the main predecessor class of all user classes derivatives
 
-''' The main predecessor of all Patron class derivatives with unique information from login to address'''
+User has seventh fields that specifying during creation procedure:
+    Login (login) - char field
+    Password (password) - char field
+    Mail (mail) - email field
+    Name (first_name) - char field
+    Surname (second_name) - char field
+    Address (address) - char field
+    Phone number (phone_number) - char field
+    Status (status) - char field ('Student' or 'Professor' or another types)
+User has field fine that librarian or admin do not specifying during user registration, Zero by default
+'''
 
 
-# there are 2 types of users: patrons and librarians
 class User(models.Model):
     login = models.CharField(max_length=64)
     password = models.CharField(max_length=64)
@@ -284,7 +358,17 @@ class User(models.Model):
     fine = models.IntegerField(default=0, blank=True)
     status = models.CharField(default='Status', max_length=32)
 
-    ''' UserCard class as contact information which librarian deals with'''
+
+'''
+UserCard is a class as a contact information which librarian deals with
+Every user has exactly one user card
+User card contains all copies, which user checked out
+
+UserCard has three fields that specifying during creation procedure:
+    User (user) - relation with certain user, when user is deleting, UserCard deleting with him by cascade deleting
+    Library (library) - relation with Library
+    Library card number (library_card_number) - integer field, every UserCard has unique library card number, library card number determining based on last existing UserCard library card number
+'''
 
 
 class UserCard(models.Model):
@@ -293,8 +377,18 @@ class UserCard(models.Model):
     library_card_number = models.IntegerField(default=None)
 
 
-# there are 3 types of patrons: students, faculties and visiting professors
-'''The main successor of User with clue features for it'''
+'''
+Patron is the one of three successors of User
+
+Patron has five next unique features:
+    Check out (check_out_doc) - feature of check outing the document (standing in queue for a certain document)
+    Search (many different searches) - features of searching documents by any criteria
+    Renew (renew) - feature of renewing the copy of certain document
+    Has overdue (has_overdue) - feature that returns True if Patron has any overdue and False if has not
+    Type (type) - feature that returns type of this Patron
+
+Patrons are creating by librarians
+'''
 
 
 class Patron(User):
@@ -415,7 +509,8 @@ class Patron(User):
         logging.info("Patron " + self.first_name + " " + self.second_name + " found " + str(res.count()) + " available documents by author " + author + " and title " + title)
         return res
 
-    # patron cannot check out some copy of the document by himself, so he is just trying to got in queue. If it is not possible returns False
+    '''Patron cannot check out some copy of the document by himself, so he is just trying to got in queue. If it is not possible returns False'''
+
     def check_out_doc(self, document):
         logging.info("Patron " + self.first_name + " " + self.second_name + " trying to got in queue for the document " + document.title)
         for copy in self.user_card.copies.all():
@@ -466,49 +561,79 @@ class Patron(User):
             return "Visiting Professor"
 
 
-''' Student patron'''
+'''
+Student class is the successor class of Patron that has not any special fields or features, but his type is using in another features
+'''
 
 
 class Student(Patron):
     pass
 
 
-''' Faculty parton'''
+'''
+Faculty class is the successor class of Patron that has not any special fields or features, but his type is using in another features
+'''
 
 
 class Faculty(Patron):
     pass
 
 
-''' Visiting professor patron'''
+'''
+Visiting professor class is the successor class of Patron that has not any special fields or features, but his type is using in another features
+'''
 
 
 class VisitingProfessor(Patron):
     pass
 
 
-''' Instructor patron'''
+'''
+Instructor class is the successor class of Patron that has not any special fields or features, but his type is using in another features
+'''
 
 
 class Instructor(Faculty):
     pass
 
 
-'''TA patron'''
+'''
+TA class is the successor class of Patron that has not any special fields or features, but his type is using in another features
+'''
 
 
 class TA(Faculty):
     pass
 
 
-'''Professor patron'''
+'''
+Professor class is the successor class of Patron that has not any special fields or features, but his type is using in another features
+'''
 
 
 class Professor(Faculty):
     pass
 
 
-''' The main moderator user - Librarian'''
+'''
+Librarian class is the successor class of User
+Librarian class is the main moderator class of the LMS
+
+Librarian has only one extra field that specifying during creation procedure:
+    Level of privileges (level_of_privileges) - integer field
+Librarian has many features:
+    Handle book (handle_book) handling a copy of book to the certain user if he is first in the queue for this document and this document has any free copy
+    Send email (send_email) sending email to the certain user
+    Notify (notify) notifying certain user that he has only one day to return the copy of document
+    Outstanding request (outstanding_request) placing an outstanding request for the certain document if he has at least second level of privileges
+    Accept doc (accept_doc) accepting a copy of certain document from certain patron
+    Accept doc after outstanding request (accept_doc_after_outstanding_request) accepting a copy of certaing document from certain patron and deleting this copy from database
+    Many creating features (create_...) creating many things from database if librarian has at least second level of privileges
+    Many deleting features (remove_...) deleting many things from database if librarian has third level of privileges
+    Another features using in another features or in front-end
+    
+Librarians are creating by admin
+'''
 
 
 class Librarian(User):
@@ -526,6 +651,7 @@ class Librarian(User):
                         user.user_card.copies.add(copy)
                         copy.booking_date = datetime.date.today()
                         copy.overdue_date = copy.booking_date + doc.booking_period(user)
+                        copy.can_renew = True
                         queue.remove(user)
                         doc.save()
                         user.user_card.save()
@@ -588,6 +714,7 @@ class Librarian(User):
             for copy in doc.copies.all():  # we are do not checking copy for is_checked_out because all checked out copies already deleted
                 users_with_copy.append(copy.user_card.user.mail)
                 copy.overdue_date = datetime.date.today() + datetime.timedelta(days=1)
+                copy.can_renew = False
                 copy.save()
             if len(users_with_copy) > 0:
                 self.send_email(message=message, subject='Outstanding request', to=users_with_copy)
@@ -691,13 +818,13 @@ class Librarian(User):
             names += list_of_names[i]
         logging.info("Librarian " + self.first_name + " " + self.second_name + " trying to create an authors: " + names)
         if self.level_of_privileges >= 2:
-            list = []
+            list_of_authors = []
             for name in list_of_names:
                 author = Author.objects.get_or_create(name=name)
                 author[0].save()
-                list.append(author[0])
+                list_of_authors.append(author[0])
             logging.info("Librarian " + self.first_name + " " + self.second_name + " created an authors: " + names)
-            return list
+            return list_of_authors
         logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create an authors: " + names + ", but he has not enough level of privileges")
 
     def create_author(self, name):
@@ -850,26 +977,31 @@ class Librarian(User):
         # print("You cannot perform this action")
 
     def remove_object(self, obj):
-        if isinstance(obj, User):
-            logging.info("Librarian " + self.first_name + " " + self.second_name + " trying to remove user " + obj.first_name + " " + obj.second_name)
+        if isinstance(obj, Patron):
+            obj_type = Patron
+            logging.info("Librarian " + self.first_name + " " + self.second_name + " trying to remove patron " + obj.first_name + " " + obj.second_name)
         elif isinstance(obj, Document):
+            obj_type = Document
             logging.info("Librarian " + self.first_name + " " + self.second_name + " trying to remove document " + obj.title)
         elif isinstance(obj, Admin):
             logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to remove admin " + obj.first_name + " " + obj.second_name)
+            return False
+        else:
+            logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to remove not a patron and not an document")
             return False
 
         if self.level_of_privileges == 3:
             obj.delete()
 
-            if isinstance(obj, User):
-                logging.info("Librarian " + self.first_name + " " + self.second_name + " removed user " + obj.first_name + " " + obj.second_name)
-            elif isinstance(obj, Document):
+            if obj_type is Patron:
+                logging.info("Librarian " + self.first_name + " " + self.second_name + " removed patron " + obj.first_name + " " + obj.second_name)
+            elif obj_type is Document:
                 logging.info("Librarian " + self.first_name + " " + self.second_name + " removed document " + obj.title)
             return True
 
-        if isinstance(obj, User):
-            logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to remove user " + obj.first_name + " " + obj.second_name + ", but he has not enough level of privileges")
-        elif isinstance(obj, Document):
+        if obj_type is Patron:
+            logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to remove patron " + obj.first_name + " " + obj.second_name + ", but he has not enough level of privileges")
+        elif obj_type is Document:
             logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to remove document " + obj.title + ", but he has not enough level of privileges")
 
     def remove_copies(self, document, count):
@@ -944,6 +1076,21 @@ class Librarian(User):
     #             if copy != copies.last():
     #                 print(", ", end='')
     #     print("]")
+
+
+'''
+Admin class is the successor class of User class
+Admin is the main moderator class of LMS
+Admin has 4 unique moderating features:
+    Add librarian (add_librarian) that creating librarian in database
+    Change level of privileges (change_level_of_privileges) that changing the level of privileges of certain librarian in database
+    Delete librarian (delete_librarian) that deleting certain librarian from database
+    Check logs (check_logs) that returns all saved logs by string
+Admin has 1 extra feature for tests:
+    Check logs for tests (check_logs_for_tests) that printing all saved logs after certain line
+Admin creating by library at the starting work of LMS
+There is could be only one admin in database
+'''
 
 
 class Admin(User):
