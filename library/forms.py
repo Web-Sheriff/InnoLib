@@ -42,7 +42,7 @@ class SignUpStudent(forms.ModelForm):
 
     class Meta:
         model = Student
-        fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail')
+        fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail','status')
         exclude = [""]
 
 
@@ -51,7 +51,7 @@ class SignUpProfessor(forms.ModelForm):
 
     class Meta:
         model = Professor
-        fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail')
+        fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail','status')
         exclude = [""]
 
 
@@ -60,7 +60,7 @@ class SignUpVisitingProfessor(forms.ModelForm):
 
     class Meta:
         model = VisitingProfessor
-        fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail')
+        fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail','status')
         exclude = [""]
 
 
@@ -69,7 +69,7 @@ class SignUpInstructor(forms.ModelForm):
 
     class Meta:
         model = Instructor
-        fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail')
+        fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail','status')
         exclude = [""]
 
 
@@ -78,7 +78,7 @@ class SignUpTA(forms.ModelForm):
 
     class Meta:
         model = TA
-        fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail')
+        fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail','status')
         exclude = [""]
 
 

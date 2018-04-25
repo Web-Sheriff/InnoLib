@@ -282,7 +282,7 @@ class User(models.Model):
     address = models.CharField(max_length=256)
     phone_number = models.CharField(max_length=16)
     fine = models.IntegerField(default=0, blank=True)
-    status = models.CharField(default='User', max_length=32)
+    status = models.CharField(default='Status', max_length=32)
 
     ''' UserCard class as contact information which librarian deals with'''
 

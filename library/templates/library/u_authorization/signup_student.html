@@ -6,7 +6,7 @@
 
 <meta charset="UTF-8">
 
-<title>login</title>
+<title>SIGNUP</title>
 
 </head>
 
@@ -18,13 +18,13 @@
 
 {% block content %}
 
-    <h1 style="position: fixed; top: 90px; left: 700px;); ">Signup</h1>
+    <h1 style="position: fixed; top: 90px; left: 700px;); ">Signup Student</h1>
 
 
   <form method="POST" class="signup" style="position: fixed; top: 150px; left: 600px; border: #FCA205 5px solid " ;>
        {% csrf_token %}
 
-       {{ form.as_p }}
+       {{ form1.as_p }}
 
         <input type="submit" class="btn-default" style="margin-top: 5px; background: yellow;;" value="Submit"/>
    </form>
