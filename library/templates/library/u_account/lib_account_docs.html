@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Yeah, boy</title>
+</head>
+
+<body>
+
+<!-- For working with form -->
+{% block content %}
+    <h1 style="position: fixed; top: 130px; left: 150px;); ">Adding a document</h1>
+    <form method="POST" class="librarian_add_user"
+          style="position: fixed; top: 200px; left: 150px; border: #FCA205 5px solid ">{% csrf_token %}
+        {{ form1.as_p }}
+        <button type="submit" class="save btn btn-default" style="margin-top: 5px; background: yellow">Add</button>
+    </form>
+
+    <form method="POST" class="list" style="position: fixed; top: 150px; left: 600px; border: #FCA205 5px solid ">
+        <h1 style="position: fixed; top: 200px; left: 550px;); ">List of documents</h1>
+        {{ books.as_p }}
+
+        {% for i in books %}
+            <ul>
+                <li>{{ i.first_name }} {{ i.second_name }}</li>
+                <li>HELLO</li>
+            </ul>
+        {% endfor %}
+    </form>
+
+    <form method="POST" class="list" style="position: fixed; top: 150px; left: 1000px; border: #FCA205 5px solid ">
+        <h1 style="position: fixed; top: 200px; left: 1000px;); ">Delete a document</h1>
+        <a href="{% url 'delete_doc' %}" class="btn btn-primary btn-xs pull-right"> Delete the document</a>
+    </form>
+
+
+{% endblock %}
+
+</body>
+</html>

@@ -82,6 +82,41 @@ class SignUpTA(forms.ModelForm):
         exclude = [""]
 
 
+class AddLibrarian(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput)
+
+    class Meta:
+        model = Librarian
+        fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail')
+        exclude = [""]
+
+class AddUser(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput)
+
+    class Meta:
+        model = User
+        fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail', 'status')
+        exclude = [""]
+
+
+class AddDocument(forms.ModelForm):
+    class Meta:
+        model = Document
+        fields = ('library','title','authors','price_value','keywords')
+
+
+class DeleteUser(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('first_name','second_name')
+
+
+class DeleteDoc(forms.ModelForm):
+    class Meta:
+        model = Document
+        fields = ('title',)
+
+
 class UserForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
 
@@ -113,6 +148,7 @@ class BookForm(forms.ModelForm):
         model = Book
         fields = ('library', 'title', 'price_value', 'is_best_seller', 'edition', 'publisher', 'year', 'authors')
         exclude = [""]
+
 
 
 class AVForm(forms.ModelForm):

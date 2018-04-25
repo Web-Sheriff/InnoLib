@@ -1,13 +1,21 @@
 from django.conf.urls import url
 from django.urls import path
+
 from . import views
 
 urlpatterns = [
     url(r'^$', views.library, name='libsystem'),
     url(r'libsystem_logined/', views.logined_library, name='libsystem_logined'),
-    url(r'^innolib', views.login, name='login'),
+    url(r'^innolib$', views.login, name='login'),
     url(r'^signup', views.signup, name='signup'),
     url(r'^login_not_valid', views.login_not_valid, name='login_not_valid'),
+    url(r'^innolib/admin_account', views.admin_account, name='admin_account'),
+    url(r'^innolib/lib_account_users', views.lib_account_users, name='lib_account1'),
+    url(r'^innolib/lib_account_books', views.lib_account_docs, name='lib_account2'),
+    url(r'^innolib/lib_account/delete_user', views.lib_account_delete_user, name='delete_user'),
+    url(r'^innolib/lib_account/delete_doc', views.lib_account_delete_doc, name='delete_doc'),
+    url(r'^innolib/account', views.account, name='account'),
+
     url(r'^user_list', views.user_list.as_view(), name='user_list'),
     url(r'^librarian_list', views.list_to_delete, name='librarian_list'),
     url(r'^librarian_add_book', views.librarian_add_book, name='librarian_add_book'),
@@ -28,7 +36,6 @@ urlpatterns = [
     url(r'^logined_for_admin', views.logined_for_admin, name='logined_for_admin'),
     url(r'^logined_for_patron', views.logined_for_patron, name='logined_for_patron'),
     url(r'^list_of_librarians', views.list_of_librarians, name='list_of_librarians'),
-    url(r'^admin_add_librarian', views.admin_add_librarian, name='admin_add_librarian'),
     url(r'^adding_doc_start', views.adding_doc_start, name='adding_doc_start'),
     url(r'^adding_users_start', views.adding_users_start, name='adding_users_start'),
     path('users/<int:pk>/', views.user_detail.as_view(), name='user_detail'),
