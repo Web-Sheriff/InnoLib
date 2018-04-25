@@ -43,5 +43,6 @@ urlpatterns = [
     path('librarians/<int:pk>/admin_delete_librarian/', views.admin_delete_librarian, name='admin_delete_librarian'),
     path('patrons/<int:pk>/', views.patron_detail.as_view(), name='patron_detail'),
     path('librarians/<int:pk>/', views.librarian_detail.as_view(), name='librarian_detail'),
-    path('copies/<int:pk>/', views.copy_detail.as_view(), name='patron_detail')
+    path('copies/<int:pk>/', views.copy_detail.as_view(), name='patron_detail'),
+    #path('signup/student/', views.signup_student, name='aaa')
 ]

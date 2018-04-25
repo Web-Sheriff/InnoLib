@@ -7,15 +7,16 @@
 <body>
 
 {{ user_list.as_table }}
-<form method="POST" class="list" style="position: fixed; top: 150px; left: 600px; border: #FCA205 5px solid " >
+<form method="POST" class="table" style="position: fixed; top: 150px; left: 600px; border: #FCA205 5px solid " >
 {% for i in user_list %}
-
+<table>
                   <tr class='success'>
                         <td>{{ i.username }}</td>
                         <td>{{ i.mail }}</td>
                         <td>{{ i.user_card.copies.get.document.title}}</td>
                   </tr>
 {% endfor %}
+    </table>
  </form>
 </body>
 </html>

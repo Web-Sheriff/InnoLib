@@ -3,11 +3,12 @@ from django.shortcuts import render, redirect
 # from django.views.generic import TemplateView
 # Create your views here.
 from django.views import generic
+from django.urls import reverse
 
 from .forms import *
 
 lib0 = Librarian
-patron0 = User
+patron0 = Patron
 admin0 = Admin
 
 class patron_detail(generic.DetailView):
@@ -200,16 +201,16 @@ def signup(request):
     if request.method == "POST":
         form = SignUpForm(request.POST)
         if form.is_valid():
-            if form.status == 'Student' or form.status == 'student':
+            if form.cleaned_data['status'] == 'Student' or form.cleaned_data['status'] == 'student':
                 return signup_student(request)
-            elif form.status == 'Professor' or form.status == 'professor':
+            elif form.cleaned_data['status'] == 'Professor' or form.cleaned_data['status'] == 'professor':
                 return signup_professor(request)
-            elif form.status == 'Visiting Professor' or form.status == 'visiting professor' or \
-                    form.status == 'visiting Professor' or form.status == 'Visiting professor':
+            elif form.cleaned_data['status'] == 'Visiting Professor' or form.cleaned_data['status'] == 'visiting professor' or \
+                    form.cleaned_data['status'] == 'visiting Professor' or form.cleaned_data['status'] == 'Visiting professor':
                 return signup_visiting_professor(request)
-            elif form.status == 'Instructor' or form.status == 'instructor':
+            elif form.cleaned_data['status'] == 'Instructor' or form.cleaned_data['status'] == 'instructor':
                 return signup_instructor(request)
-            elif form.status == 'ta' or form.status == 'TA' or form.status == 'Ta' or form.status == 'tA':
+            elif form.cleaned_data['status'] == 'ta' or form.cleaned_data['status'] == 'TA' or form.cleaned_data['status'] == 'Ta' or form.cleaned_data['status'] == 'ta':
                 return signup_ta(request)
             else:
                 return render(request, 'library/u_authorization/signup_not_valid.html', {'form': form})
@@ -217,16 +218,19 @@ def signup(request):
         form = SignUpForm()
     return render(request, 'library/u_authorization/signup.html', {'form': form})
 
-
 def signup_student(request):
+    print('\n\nYEAH\n')
     if request.method == "POST":
-        form = SignUpStudent(request.POST)
+        print('\n\n\n\nXXXXXXXXXXXXXXXXXXXXXXX\n\n\n\n\n')
+        form = SignUpStudent(request.GET)
+        #print(form.errors)
         if form.is_valid():
+            print('\n\n\n\n======================\n\n\n\n\n')
             form.save()
             return redirect('user_list')
     else:
         form = SignUpStudent()
-    return render(request, 'library/u_authorization/signup.html', {'form': form})
+    return render(request, 'library/u_authorization/signup_student.html', {'form': form})
 
 
 def signup_professor(request):
@@ -236,8 +240,8 @@ def signup_professor(request):
             form.save()
             return redirect('user_list')
     else:
-        form = SignUpStudent()
-    return render(request, 'library/u_authorization/signup.html', {'form': form})
+        form = SignUpProfessor()
+    return render(request, 'library/u_authorization/signup_professor.html', {'form': form})
 
 
 def signup_instructor(request):
@@ -248,7 +252,7 @@ def signup_instructor(request):
             return redirect('user_list')
     else:
         form = SignUpInstructor()
-    return render(request, 'library/u_authorization/signup.html', {'form': form})
+    return render(request, 'library/u_authorization/signup_instructor.html', {'form': form})
 
 
 def signup_visiting_professor(request):
@@ -282,15 +286,19 @@ def login(request):
             for i in User.objects.all():
                 if post.username == i.login:
                     login_exits = True
+                    print(i.status)
                     if post.password == i.password:
                         if i.status == 'Librarian':
                             lib0 = i
+                            print('zzzzz')
                             return logined_for_librarian(request, i)
                         elif i.status == 'Admin':
                             admin0 = i
+                            print('aaaaa')
                             return logined_for_admin(request, i)
                         else:
                             patron0 = i
+                            print('kkkkk')
                             return logined_for_patron(request, i)
             if login_exits:
                 return render(request, 'library/u_authorization/not_valid_password.html', {'form': form})
@@ -310,7 +318,7 @@ def account(request):
 
 
 def logined_for_librarian(request, patron):
-    # users = User.objects.all()
+    users = User.objects.all()
     return render(request, 'library/u_account/logined_for_librarian.html', locals())
 
 
@@ -348,6 +356,7 @@ def lib_account_delete_user(request):
         form1 = DeleteUser()
     return render(request, 'library/u_account/lib_account_delete_user.html', {'form1': form1}, locals())
 
+
 def lib_account_delete_doc(request):
     if request.method == "POST":
         form1 = DeleteDoc(request.POST)
@@ -355,6 +364,7 @@ def lib_account_delete_doc(request):
             post = form1.save()
             for i in Document.objects.all():
                 if i.title == form1.title:
+                    i.delete()
                     pass
             return redirect('logined_for_librarian')
     else:
@@ -367,7 +377,7 @@ def logined_for_admin(request, patron):
 
 
 def admin_account(request):
-    librarians = User.objects.all()
+    librarians = Librarian.objects.all()
     if request.method == "POST":
         form_add_lib = AddLibrarian(request.POST)
         if form_add_lib.is_valid():

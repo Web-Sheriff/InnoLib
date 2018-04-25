@@ -9,30 +9,18 @@
 
 <!-- For working with form -->
 {% block content %}
-    <h1 style="position: fixed; top: 130px; left: 150px;); ">Adding a document</h1>
+    <h1 style="position: fixed; top: 130px; left: 550px;); ">Adding a document</h1>
     <form method="POST" class="librarian_add_user"
-          style="position: fixed; top: 200px; left: 150px; border: #FCA205 5px solid ">{% csrf_token %}
+          style="position: fixed; top: 200px; left: 550px; border: #FCA205 5px solid ">{% csrf_token %}
         {{ form1.as_p }}
         <button type="submit" class="save btn btn-default" style="margin-top: 5px; background: yellow">Add</button>
     </form>
-
-    <form method="POST" class="list" style="position: fixed; top: 150px; left: 600px; border: #FCA205 5px solid ">
-        <h1 style="position: fixed; top: 200px; left: 550px;); ">List of documents</h1>
-        {{ books.as_p }}
-
-        {% for i in books %}
-            <ul>
-                <li>{{ i.first_name }} {{ i.second_name }}</li>
-                <li>HELLO</li>
-            </ul>
-        {% endfor %}
-    </form>
-
-    <form method="POST" class="list" style="position: fixed; top: 150px; left: 1000px; border: #FCA205 5px solid ">
-        <h1 style="position: fixed; top: 200px; left: 1000px;); ">Delete a document</h1>
+    <button type="submit" class="save btn btn-default" onclick="window.location.href='http://127.0.0.1:8000/adding_doc_start.html'" style="background: orange;position: fixed; top: 240px; left: 825px;); ">Add Specific Doc</button>
+    <form method="POST" class="list" style="background:orange;position: fixed; top: 265px; left: 825px; border: #FCA205 5px solid ">
         <a href="{% url 'delete_doc' %}" class="btn btn-primary btn-xs pull-right"> Delete the document</a>
     </form>
 
+<button type="submit" class="save btn btn-default" onclick="window.location.href='http://127.0.0.1:8000/books_for_user.html'" style="background: orange;position: fixed; top: 295px; left: 825px;); ">List of Books</button>
 
 {% endblock %}
 

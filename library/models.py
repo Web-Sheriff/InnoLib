@@ -93,7 +93,7 @@ class Document(models.Model):
     library = models.ForeignKey(Library, on_delete=models.CASCADE, related_name='documents')
     title = models.CharField(max_length=128)
     authors = models.ManyToManyField(Author, related_name='documents')
-    price_value = models.IntegerField()
+    price_value = models.IntegerField(blank=True)
     keywords = models.ManyToManyField(Keyword, related_name='documents')
 
     studentsQueue = models.ManyToManyField("Student", related_name='documents', blank=True)

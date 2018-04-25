@@ -29,12 +29,8 @@ class LoginForm(forms.ModelForm):
 #         model = User
 #         fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail')
 #         exclude = [""]
-class SignUpForm(forms.ModelForm):
-    # status = forms.CharField(widget=forms.PasswordInput)
-    class Meta:
-        model = User
-        fields = ('status',)
-        exclude = [""]
+class SignUpForm(forms.Form):
+    status = forms.CharField(max_length=32)
 
 
 class SignUpStudent(forms.ModelForm):
