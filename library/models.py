@@ -1081,12 +1081,12 @@ class Librarian(User):
 '''
 Admin class is the successor class of User class
 Admin is the main moderator class of LMS
-Admin has 4 unique moderating features:
+Admin has four unique moderating features:
     Add librarian (add_librarian) that creating librarian in database
     Change level of privileges (change_level_of_privileges) that changing the level of privileges of certain librarian in database
     Delete librarian (delete_librarian) that deleting certain librarian from database
     Check logs (check_logs) that returns all saved logs by string
-Admin has 1 extra feature for tests:
+Admin has one extra feature for tests:
     Check logs for tests (check_logs_for_tests) that printing all saved logs after certain line
 Admin creating by library at the starting work of LMS
 There is could be only one admin in database
