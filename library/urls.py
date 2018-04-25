@@ -14,8 +14,8 @@ urlpatterns = [
     url(r'^innolib/lib_account_books', views.lib_account_docs, name='lib_account2'),
     url(r'^innolib/lib_account/delete_user', views.lib_account_delete_user, name='delete_user'),
     url(r'^innolib/lib_account/delete_doc', views.lib_account_delete_doc, name='delete_doc'),
+    url(r'^innolib/lib_account/delete_lib', views.lib_account_delete_lib, name='delete_lib'),
     url(r'^innolib/account', views.account, name='account'),
-
     url(r'^user_list', views.user_list.as_view(), name='user_list'),
     url(r'^librarian_list', views.list_to_delete, name='librarian_list'),
     url(r'^librarian_add_book', views.librarian_add_book, name='librarian_add_book'),

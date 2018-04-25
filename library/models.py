@@ -246,8 +246,7 @@ class Copy(models.Model):
     need_to_return = models.BooleanField(default=False)
     booking_date = models.DateField(null=True)
     overdue_date = models.DateField(null=True)
-    renew = models.ForeignKey("Librarian", on_delete=models.DO_NOTHING, related_name='renew', null=True)
-    weeks_renew = models.ForeignKey("Librarian", on_delete=models.DO_NOTHING, related_name='weeks_renew', null=True)
+    can_renew = models.BooleanField(default=True, blank=True)
 
     # def check_out(self, user):
     #     if isinstance(self.document, ReferenceBook):
@@ -300,12 +299,15 @@ class UserCard(models.Model):
 
 class Patron(User):
 
-    # renew the document for n weeks
-    def renew(self, queue=Copy.renew):
-        logging.info("Patron " + self.first_name + " " + self.second_name + " trying to renew the copy of document")
-        # queue.add(self)
-        # queue.model.save()
-        logging.info("Patron " + self.first_name + " " + self.second_name + " renewed the copy of document")
+    def renew(self, copy):
+        logging.info("Patron " + self.first_name + " " + self.second_name + " trying to renew the copy of document " + copy.document.title)
+        if copy.can_renew and self.status != 'Visiting Professor':
+            copy.overdue_date += datetime.timedelta(days=7)
+            copy.can_renew = False
+            copy.save()
+            logging.info("Patron " + self.first_name + " " + self.second_name + " renewed the copy of document " + copy.document.title)
+        else:
+            logging.info("Patron " + self.first_name + " " + self.second_name + " tried to renew the copy of document " + copy.document.title + ", but he cannot do that")
 
     def search_by_availability(self):  # this search returns all documents which has at least one available copy.
         logging.info("Patron " + self.first_name + self.second_name + " trying to search documents by availability")
@@ -545,14 +547,8 @@ class Librarian(User):
 
     def send_email(self, to, subject, message):
         library = Library.objects.first()
-        send_mail(auth_user=library.mail, auth_password=library.password, from_email=library.mail,
-                  subject=subject, message=message, recipient_list=to)
-
-    def renew_request(self):
-        for renew in Copy.objects.all():
-            weeks = renew.weeks_renew
-            delta = datetime.timedelta(days=weeks // 7)
-            renew.overdue_date += delta
+        # line below commented because we do not want to spam in every test
+        # send_mail(subject=subject, message=message, from_email=library.mail, recipient_list=to, fail_silently=False)
 
     def check_information_of_the_system(self):
         logging.info("Librarian " + self.first_name + " " + self.second_name + " trying to check the information of the system")
@@ -561,7 +557,6 @@ class Librarian(User):
             logging.info("Librarian " + self.first_name + " " + self.second_name + " checked the information of the system")
         else:
             logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to check the information of the system, but he has not enough level of privileges")
-
 
     def outstanding_request(self, doc):
         logging.info("Librarian " + self.first_name + " " + self.second_name + " trying to create an outstanding request for the document " + doc.title)
@@ -584,9 +579,8 @@ class Librarian(User):
             for user in doc.visitingProfessorsQueue.all():
                 removed_users_mails.append(user.mail)
                 doc.visitingProfessorsQueue.remove(user)
-            library = Library.objects.first()
             if len(removed_users_mails) > 0:
-                # send_mail(message=message, subject='Outstanding request', from_email=library.mail, recipient_list=removed_users_mails, auth_user=library.mail, auth_password=library.password)
+                self.send_email(message=message, subject='Outstanding request', to=removed_users_mails)
                 logging.info("Librarian " + self.first_name + " " + self.second_name + " notified the patrons who was removed from deleted queue for the document " + doc.title + " due to an outstanding request")
 
             message = 'Dear user, please return the copy of "' + doc.title + '" immediately due to an outstanding request. You have only 1 day to return this document'
@@ -595,8 +589,8 @@ class Librarian(User):
                 users_with_copy.append(copy.user_card.user.mail)
                 copy.overdue_date = datetime.date.today() + datetime.timedelta(days=1)
                 copy.save()
-            if len(users_with_copy):
-                # send_mail(message=message, subject='Outstanding request', from_email=library.mail, recipient_list=users_with_copy, auth_user=library.mail, auth_password=library.password)
+            if len(users_with_copy) > 0:
+                self.send_email(message=message, subject='Outstanding request', to=users_with_copy)
                 logging.info("Librarian " + self.first_name + " " + self.second_name + " notified the patrons who should to immediately return the document " + doc.title + " due to an outstanding request")
         else:
             logging.info("Librarian " + self.first_name + " " + self.second_name + " tried to create an outstanding request for the document " + doc.title + ", but he has not enough level of privileges")
@@ -604,10 +598,7 @@ class Librarian(User):
 
     def notify(self, user, document):
         message = 'Dear user, you have 1 day to take a copy of ' + document.title + ' you queued up for. After the expiration of this period you will lose this opportunity and will be removed from the queue. Good luck. Your InnoLib'
-        library = Library.objects.first()
-        send_mail(
-            message=message,
-            subject='Waiting notification', from_email=library.mail, recipient_list=user.mail, auth_user=library.mail, auth_password=library.password)
+        self.send_email(message=message, subject='Waiting notification', to=[user.mail])
         logging.info("The message with notifying was sent to the email " + user.mail + " of " + user.first_name + " " + user.second_name)
 
     def accept_doc(self, user, doc):
@@ -623,6 +614,13 @@ class Librarian(User):
                     copy.save()
                     copy.booking_date = None
                     copy.save()
+                    if datetime.date.today() > copy.overdue_date:
+                        days = (datetime.date.today() - copy.overdue_date).days
+                        fine = days * 100
+                        if fine > copy.document.price_value:
+                            fine = copy.document.price_value
+                        user.fine += fine
+                        user.save()
                     logging.info("Librarian " + self.first_name + " " + self.second_name + " accepted the copy of document " + doc.title + " from patron " + user.first_name + " " + user.second_name)
                     # first = copy.document.first_in_queue()
                     # self.notify(first, copy.document)
@@ -671,11 +669,11 @@ class Librarian(User):
         print("there are " + str(self.user_card.library.count_unchecked_copies(
             doc)) + "unchecked copies of document " + doc.title + "in library.")
 
-    def check_overdue_copies(self):
-        for card in UserCard.objects.all():
-            for copy in card.copies:
-                if copy.if_overdue():
-                    card.user.fine += copy.overdue * copy.document.price_value
+    # def check_overdue_copies(self):
+    #     for user_card in UserCard.objects.all():
+    #         for copy in user_card.copies:
+    #             if copy.if_overdue():
+    #                 user_card.user.fine += copy.overdue * copy.document.price_value
 
     def get_or_create_keywords(self, list_of_keywords):
         if self.level_of_privileges >= 2:

@@ -29,8 +29,12 @@ class LoginForm(forms.ModelForm):
 #         model = User
 #         fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail')
 #         exclude = [""]
-class SignUpForm(forms.Form):
-    status = forms.CharField(max_length=32)
+class SignUpForm(forms.ModelForm):
+    status = forms.CharField(widget=forms.TextInput)
+    class Meta:
+        model = User
+        fields = ('status',)
+        exclude = [""]
 
 
 class SignUpStudent(forms.ModelForm):
@@ -164,7 +168,7 @@ class JournalForm(forms.ModelForm):
 class CopyForm(forms.ModelForm):
     class Meta:
         model = Copy
-        fields = ('document','number', 'need_to_return', 'is_checked_out', 'user_card', 'booking_date','overdue_date', 'renew','weeks_renew')
+        fields = ('document','number', 'need_to_return', 'is_checked_out', 'user_card', 'booking_date','overdue_date')
         exclude = [""]
 
 
