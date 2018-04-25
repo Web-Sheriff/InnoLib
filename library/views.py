@@ -200,19 +200,20 @@ def signup(request):
     if request.method == "POST":
         form = SignUpForm(request.POST)
         if form.is_valid():
-            if form.status == 'Student' or form.status == 'student':
+            post = form.save()
+            if post.status == 'Student' or post.status == 'student':
                 return signup_student(request)
-            elif form.status == 'Professor' or form.status == 'professor':
+            elif post.status == 'Professor' or post.status == 'professor':
                 return signup_professor(request)
-            elif form.status == 'Visiting Professor' or form.status == 'visiting professor' or \
-                    form.status == 'visiting Professor' or form.status == 'Visiting professor':
+            elif post.status == 'Visiting Professor' or post.status == 'visiting professor' or \
+                    post.status == 'visiting Professor' or post.status == 'Visiting professor':
                 return signup_visiting_professor(request)
-            elif form.status == 'Instructor' or form.status == 'instructor':
+            elif post.status == 'Instructor' or post.status == 'instructor':
                 return signup_instructor(request)
-            elif form.status == 'ta' or form.status == 'TA' or form.status == 'Ta' or form.status == 'tA':
+            elif post.status == 'ta' or post.status == 'TA' or post.status == 'Ta' or post.status == 'tA':
                 return signup_ta(request)
             else:
-                return render(request, 'library/u_authorization/signup_not_valid.html', {'form': form})
+                return render(request, 'library/u_account/signup_not_valid.html', {'form': form})
     else:
         form = SignUpForm()
     return render(request, 'library/u_authorization/signup.html', {'form': form})
@@ -223,7 +224,7 @@ def signup_student(request):
         form = SignUpStudent(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('user_list')
+            return redirect('login')
     else:
         form = SignUpStudent()
     return render(request, 'library/u_authorization/signup.html', {'form': form})
@@ -234,7 +235,7 @@ def signup_professor(request):
         form = SignUpProfessor(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('user_list')
+            return redirect('login')
     else:
         form = SignUpStudent()
     return render(request, 'library/u_authorization/signup.html', {'form': form})
@@ -245,7 +246,7 @@ def signup_instructor(request):
         form = SignUpInstructor(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('user_list')
+            return redirect('login')
     else:
         form = SignUpInstructor()
     return render(request, 'library/u_authorization/signup.html', {'form': form})
@@ -256,7 +257,7 @@ def signup_visiting_professor(request):
         form = SignUpVisitingProfessor(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('user_list')
+            return redirect('login')
     else:
         form = SignUpVisitingProfessor()
     return render(request, 'library/u_authorization/signup.html', {'form': form})
@@ -267,7 +268,7 @@ def signup_ta(request):
         form = SignUpTA(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('user_list')
+            return redirect('login')
     else:
         form = SignUpTA()
     return render(request, 'library/u_authorization/signup.html', {'form': form})

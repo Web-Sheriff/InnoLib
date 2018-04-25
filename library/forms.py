@@ -30,7 +30,7 @@ class LoginForm(forms.ModelForm):
 #         fields = ('login', 'password', 'first_name', 'second_name', 'address', 'phone_number', 'mail')
 #         exclude = [""]
 class SignUpForm(forms.ModelForm):
-    # status = forms.CharField(widget=forms.PasswordInput)
+    status = forms.CharField(widget=forms.TextInput)
     class Meta:
         model = User
         fields = ('status',)

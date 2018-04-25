@@ -7,7 +7,7 @@ urlpatterns = [
     url(r'^$', views.library, name='libsystem'),
     url(r'libsystem_logined/', views.logined_library, name='libsystem_logined'),
     url(r'^innolib$', views.login, name='login'),
-    url(r'^signup', views.signup, name='signup'),
+    url(r'^innolib/signup', views.signup, name='signup'),
     url(r'^login_not_valid', views.login_not_valid, name='login_not_valid'),
     url(r'^innolib/admin_account', views.admin_account, name='admin_account'),
     url(r'^innolib/lib_account_users', views.lib_account_users, name='lib_account1'),
@@ -15,7 +15,6 @@ urlpatterns = [
     url(r'^innolib/lib_account/delete_user', views.lib_account_delete_user, name='delete_user'),
     url(r'^innolib/lib_account/delete_doc', views.lib_account_delete_doc, name='delete_doc'),
     url(r'^innolib/account', views.account, name='account'),
-
     url(r'^user_list', views.user_list.as_view(), name='user_list'),
     url(r'^librarian_list', views.list_to_delete, name='librarian_list'),
     url(r'^librarian_add_book', views.librarian_add_book, name='librarian_add_book'),
