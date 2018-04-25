@@ -627,7 +627,7 @@ Librarian has many features:
     Notify (notify) notifying certain user that he has only one day to return the copy of document
     Outstanding request (outstanding_request) placing an outstanding request for the certain document if he has at least second level of privileges
     Accept doc (accept_doc) accepting a copy of certain document from certain patron
-    Accept doc after outstanding request (accept_doc_after_outstanding_request) accepting a copy of certaing document from certain patron and deleting this copy from database
+    Accept doc after outstanding request (accept_doc_after_outstanding_request) accepting a copy of certain document from certain patron and deleting this copy from database
     Many creating features (create_...) creating many things from database if librarian has at least second level of privileges
     Many deleting features (remove_...) deleting many things from database if librarian has third level of privileges
     Another features using in another features or in front-end
@@ -1126,4 +1126,3 @@ class Admin(User):
                 break
         for line in logs:
             print(line)
-
