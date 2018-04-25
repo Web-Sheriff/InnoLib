@@ -150,7 +150,6 @@ class BookForm(forms.ModelForm):
         exclude = [""]
 
 
-
 class AVForm(forms.ModelForm):
     class Meta:
         model = AudioVideo
@@ -168,7 +167,7 @@ class JournalForm(forms.ModelForm):
 class CopyForm(forms.ModelForm):
     class Meta:
         model = Copy
-        fields = ('document','number', 'need_to_return', 'is_checked_out', 'user_card', 'booking_date','overdue_date')
+        fields = ('document','number', 'need_to_return', 'is_checked_out', 'user_card', 'booking_date', 'overdue_date')
         exclude = [""]
 
 
