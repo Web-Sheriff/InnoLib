@@ -202,7 +202,7 @@ def signup(request):
         form = SignUpForm(request.POST)
         if form.is_valid():
             if form.cleaned_data['status'] == 'Student' or form.cleaned_data['status'] == 'student':
-            post = form.save()
+                post = form.save()
             if post.status == 'Student' or post.status == 'student':
                 return signup_student(request)
             elif post.status == 'Professor' or post.status == 'professor':
