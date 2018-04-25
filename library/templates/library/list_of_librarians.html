@@ -6,15 +6,16 @@
 </head>
 <body>
 {% block content %}
-<h1 style="position: fixed; top: 90px; left: 700px;); ">List of Librarians</h1>
+<h1 style="position: fixed; top: 90px; left: 600px;); ">List of Librarians</h1>
 
-  <form method="POST" class="lib" style="position: fixed; top: 150px; left: 600px; border: #FCA205 5px solid " ;>
+  <form method="POST" class="lib" style="position: fixed; top: 150px; left: 650px; border: #FCA205 5px solid " ;>
        {% csrf_token %}
         {{ lib.as_table }}
         <table>
             {% for i in lib %}
                   <tr class='success'>
-                        <td>{{ i.id }}</td>
+                        <td>{{ i.first_name }}</td>
+                        <td>{{ i.second_name }}</td>
                         <td>{{ i.level_of_privileges}}</td>
                   </tr>
                 <break></break>
