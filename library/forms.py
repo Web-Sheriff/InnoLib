@@ -168,7 +168,7 @@ class JournalForm(forms.ModelForm):
 class CopyForm(forms.ModelForm):
     class Meta:
         model = Copy
-        fields = ('document','number', 'need_to_return', 'is_checked_out', 'user_card', 'booking_date','overdue_date', 'renew','weeks_renew')
+        fields = ('document','number', 'need_to_return', 'is_checked_out', 'user_card', 'booking_date','overdue_date')
         exclude = [""]
 
 
